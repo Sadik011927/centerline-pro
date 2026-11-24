@@ -1,0 +1,3267 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CenterLine Pro — Raster to Editable Stroke Vectorizer (SVG &amp; EPS)</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --font-sans: 'Inter', 'Hind Siliguri', system-ui, -apple-system, sans-serif;
+    }
+    body {
+      font-family: var(--font-sans);
+      background: radial-gradient(circle at 12% 10%, rgba(99, 102, 241, 0.12), transparent 34%),
+                  radial-gradient(circle at 88% 12%, rgba(14, 165, 233, 0.14), transparent 32%),
+                  radial-gradient(circle at 50% 95%, rgba(236, 72, 153, 0.08), transparent 38%),
+                  #f4f7fb;
+      color: #0f172a;
+      min-height: 100vh;
+    }
+    .checker-bg {
+      background-color: #ffffff;
+      background-image:
+        linear-gradient(45deg, #f1f5f9 25%, transparent 25%),
+        linear-gradient(-45deg, #f1f5f9 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #f1f5f9 75%),
+        linear-gradient(-45deg, transparent 75%, #f1f5f9 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+    }
+    .stage-card {
+      background: rgba(255, 255, 255, 0.96);
+      border: 1.5px solid #e2e8f0;
+      box-shadow: 0 10px 30px -12px rgba(15, 23, 42, 0.12);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .stage-card:hover {
+      border-color: #93c5fd;
+      box-shadow: 0 16px 36px -14px rgba(37, 99, 235, 0.18);
+    }
+    .stage-pill {
+      box-shadow: 0 6px 16px -4px rgba(37, 99, 235, 0.35);
+    }
+    input[type="range"] {
+      accent-color: #4f46e5;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 999px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 999px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    @keyframes pulseRing {
+      0%, 100% { transform: scale(1); opacity: 0.9; }
+      50% { transform: scale(1.06); opacity: 1; }
+    }
+    .processing-pulse {
+      animation: pulseRing 1.3s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="antialiased overflow-x-hidden selection:bg-indigo-200 selection:text-indigo-950">
+
+  <!-- Top Navigation -->
+  <header class="sticky top-0 z-40 backdrop-blur-md bg-white/85 border-b border-slate-200/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 via-blue-600 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/25 shrink-0">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 17C7 9 17 9 20 17" />
+            <path d="M7.5 19C9.5 14 14.5 14 16.5 19" />
+            <circle cx="12" cy="20" r="1.4" fill="currentColor" />
+            <rect x="2.8" y="15.8" width="2.4" height="2.4" fill="#ffffff" stroke="#1e40af" stroke-width="1.2" />
+            <rect x="10.8" y="9.8" width="2.4" height="2.4" fill="#ffffff" stroke="#1e40af" stroke-width="1.2" />
+            <rect x="18.8" y="15.8" width="2.4" height="2.4" fill="#ffffff" stroke="#1e40af" stroke-width="1.2" />
+          </svg>
+        </div>
+        <div class="truncate">
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-extrabold tracking-tight bg-gradient-to-r from-indigo-700 via-blue-600 to-cyan-600 bg-clip-text text-transparent">
+              CenterLine Pro
+            </h1>
+            <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">
+              100% Free &amp; Offline
+            </span>
+          </div>
+          <p class="text-[11px] sm:text-xs text-slate-500 truncate" data-i18n="subtitle">
+            রাস্টার ইমেজ থেকে এডিটেবল স্ট্রোক সেন্টারলাইন ভেক্টর (SVG &amp; EPS)
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 shrink-0">
+        <button id="btnLangToggle" type="button" class="px-2.5 py-1.5 rounded-lg text-xs font-bold border border-slate-200 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-300 text-slate-700 transition flex items-center gap-1.5">
+          <i data-lucide="languages" class="w-3.5 h-3.5 text-indigo-600"></i>
+          <span id="langLabel">EN / বাংলা</span>
+        </button>
+        <button id="btnGithubGuide" type="button" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-slate-900 to-indigo-900 hover:from-indigo-700 hover:to-blue-700 text-white shadow-sm transition flex items-center gap-1.5">
+          <i data-lucide="globe" class="w-3.5 h-3.5 text-cyan-300"></i>
+          <span class="hidden sm:inline" data-i18n="githubBtn">ফ্রি GitHub হোস্টিং</span>
+          <span class="sm:hidden">GitHub</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+    <!-- Action Bar: Upload, Folder Batch & Output Format -->
+    <section class="rounded-2xl bg-white/95 border border-slate-200 shadow-lg shadow-slate-200/50 p-4 sm:p-5">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+
+        <!-- Upload / Drop Zone -->
+        <div class="lg:col-span-5">
+          <div id="dropZone" class="group relative rounded-xl border-2 border-dashed border-indigo-300 hover:border-indigo-500 bg-gradient-to-br from-indigo-50/70 via-blue-50/50 to-cyan-50/60 p-4 transition cursor-pointer flex items-center gap-3.5">
+            <input id="singleFileInput" type="file" accept="image/*" multiple class="hidden" />
+            <input id="fallbackFolderInput" type="file" webkitdirectory directory multiple accept="image/*" class="hidden" />
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-600 to-blue-500 text-white flex items-center justify-center shadow-md shadow-indigo-500/25 shrink-0 group-hover:scale-105 transition">
+              <i data-lucide="upload-cloud" class="w-6 h-6"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="text-sm font-bold text-slate-800" data-i18n="dropTitle">ইমেজ আপলোড করুন বা ড্র্যাগ করে ছাড়ুন</div>
+              <div class="text-xs text-slate-500 mt-0.5" data-i18n="dropSub">JPG, PNG, WebP — এক বা একাধিক আইকন সাপোর্ট করে</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Folder Batch Auto-Save + Output Format -->
+        <div class="lg:col-span-7 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <!-- Folder Picker -->
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="btnSelectFolder" type="button" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white shadow-md shadow-indigo-500/25 transition flex items-center gap-2">
+              <i data-lucide="folder-open" class="w-4 h-4"></i>
+              <span data-i18n="selectFolderBtn">ফোল্ডার সিলেক্ট (অটো-সেভ)</span>
+            </button>
+            <button id="btnUploadFolderFallback" type="button" class="px-3 py-2.5 rounded-xl text-xs font-semibold border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 transition flex items-center gap-1.5" title="Standard Folder Picker">
+              <i data-lucide="folders" class="w-4 h-4 text-indigo-600"></i>
+              <span data-i18n="folderUploadAlt">ফোল্ডার আপলোড</span>
+            </button>
+          </div>
+
+          <!-- Format Selector (SVG / EPS / Both) -->
+          <div class="flex items-center gap-2 bg-slate-100/90 p-1.5 rounded-xl border border-slate-200">
+            <span class="text-[11px] font-bold text-slate-500 px-1.5 uppercase tracking-wide" data-i18n="formatLabel">ফরম্যাট:</span>
+            <button type="button" data-format="svg" class="fmt-btn px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-indigo-700 shadow-sm">SVG</button>
+            <button type="button" data-format="eps" class="fmt-btn px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900">EPS</button>
+            <button type="button" data-format="both" class="fmt-btn px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900" data-i18n="bothFmt">SVG + EPS</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sample Icons Quick Bar -->
+      <div class="mt-3.5 pt-3.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-xs font-semibold text-slate-500 flex items-center gap-1">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-500"></i>
+            <span data-i18n="trySamples">ডেমো আইকন টেস্ট করুন:</span>
+          </span>
+          <button type="button" data-sample="wifi" class="sample-btn px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition">Wi-Fi Icon</button>
+          <button type="button" data-sample="multi" class="sample-btn px-2.5 py-1 rounded-lg text-xs font-semibold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100 transition" data-i18n="sampleMulti">৪টি আইকন একসাথে</button>
+          <button type="button" data-sample="home" class="sample-btn px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition">Home &amp; Star</button>
+          <button type="button" data-sample="pen" class="sample-btn px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition">Pencil &amp; Gear</button>
+          <button type="button" data-sample="mic" class="sample-btn px-2.5 py-1 rounded-lg text-xs font-semibold bg-violet-50 text-violet-700 border border-violet-200 hover:bg-violet-100 transition">Mic &amp; Rounded Box</button>
+        </div>
+        <div id="statusBadge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span id="statusText">প্রস্তুত</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3-STAGE VISUAL PIPELINE (Matches Uploaded Reference Image) -->
+    <section class="relative">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
+
+        <!-- STAGE 1: JPEG / Raster Image (+ Upscale) -->
+        <div class="stage-card rounded-2xl p-4 flex flex-col">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <span class="stage-pill inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-extrabold text-white bg-gradient-to-r from-slate-800 to-slate-600">
+              <span>1.</span>
+              <span data-i18n="stage1Title">JPEG / Raster Image</span>
+            </span>
+            <span id="metaStage1" class="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">0 × 0 px</span>
+          </div>
+          <div class="relative flex-1 min-h-[260px] sm:min-h-[300px] rounded-xl border border-slate-200 checker-bg flex items-center justify-center overflow-hidden p-3">
+            <canvas id="canvasOriginal" class="max-w-full max-h-[280px] object-contain rounded"></canvas>
+            <div id="upscaleBadge" class="absolute bottom-2.5 left-2.5 px-2.5 py-1 rounded-lg bg-slate-900/80 text-white text-[11px] font-semibold backdrop-blur-sm">
+              Upscale: 2×
+            </div>
+          </div>
+          <div class="mt-2.5 flex items-center justify-between text-[11px] text-slate-500">
+            <span data-i18n="stage1Desc">অরিজিনাল রাস্টার + অটো আপস্কেল</span>
+            <span id="detectedStrokeLabel" class="font-bold text-indigo-600">Auto Stroke: -- px</span>
+          </div>
+        </div>
+
+        <!-- STAGE 2: Centerline Path + Anchor Points -->
+        <div class="stage-card rounded-2xl p-4 flex flex-col ring-2 ring-blue-500/20 border-blue-300">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <span class="stage-pill inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-extrabold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-500">
+              <span>2.</span>
+              <span data-i18n="stage2Title">Centerline Path</span>
+            </span>
+            <div class="flex items-center gap-1.5">
+              <button id="btnToggleSymmetry" type="button" class="px-2 py-1 rounded-lg text-[11px] font-bold bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 transition" title="Toggle Centerline Axis">
+                Axis
+              </button>
+              <button id="btnToggleHandles" type="button" class="px-2 py-1 rounded-lg text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition" title="Toggle Bézier Handles">
+                Handles
+              </button>
+            </div>
+          </div>
+          <div class="relative flex-1 min-h-[260px] sm:min-h-[300px] rounded-xl border border-blue-200 bg-white flex items-center justify-center overflow-hidden p-3 pb-10">
+            <div id="centerlinePreview" class="w-full h-full flex items-center justify-center"></div>
+            <div class="absolute bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-rose-600 text-white text-[10px] font-bold shadow-md flex items-center gap-1 whitespace-nowrap">
+              <i data-lucide="crosshair" class="w-3 h-3 shrink-0"></i>
+              <span>Centerline &amp; Anchor Points</span>
+            </div>
+          </div>
+          <div class="mt-2.5 flex items-center justify-between text-[11px] text-slate-500">
+            <span id="metaPaths" class="font-semibold text-blue-700">Paths: 0</span>
+            <span id="metaAnchors" class="font-semibold text-indigo-700">Anchors: 0</span>
+            <span id="metaAccuracy" class="font-bold text-emerald-600">Accuracy: 99%</span>
+          </div>
+        </div>
+
+        <!-- STAGE 3: Perfect Vector Output (Editable Stroke) -->
+        <div class="stage-card rounded-2xl p-4 flex flex-col border-emerald-200">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <span class="stage-pill inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-extrabold text-white bg-gradient-to-r from-blue-600 to-emerald-500">
+              <span>3.</span>
+              <span data-i18n="stage3Title">Perfect Vector</span>
+            </span>
+            <div class="flex items-center gap-1">
+              <button id="btnZoomOut" type="button" class="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 text-xs font-bold" title="Zoom Out">-</button>
+              <span id="zoomLabel" class="text-[11px] font-bold text-slate-600 w-10 text-center">100%</span>
+              <button id="btnZoomIn" type="button" class="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 text-xs font-bold" title="Zoom In">+</button>
+            </div>
+          </div>
+          <div class="relative flex-1 min-h-[260px] sm:min-h-[300px] rounded-xl border border-slate-200 checker-bg flex items-center justify-center overflow-hidden p-3">
+            <div id="vectorPreview" class="w-full h-full flex items-center justify-center transition-transform duration-150"></div>
+            <div class="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-lg shadow-emerald-500/35 flex items-center justify-center">
+              <i data-lucide="check" class="w-5 h-5 stroke-[3]"></i>
+            </div>
+          </div>
+          <div class="mt-2.5 flex items-center justify-between gap-2">
+            <button id="btnDownloadSVG" type="button" class="flex-1 py-2 px-3 rounded-xl text-xs font-bold bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white shadow-sm transition flex items-center justify-center gap-1.5">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i>
+              <span>Download SVG</span>
+            </button>
+            <button id="btnDownloadEPS" type="button" class="flex-1 py-2 px-3 rounded-xl text-xs font-bold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-sm transition flex items-center justify-center gap-1.5">
+              <i data-lucide="file-code" class="w-3.5 h-3.5"></i>
+              <span>Download EPS</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Controls + Batch Queue Grid -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+      <!-- Left: Editable Stroke & Tracing Controls -->
+      <div class="lg:col-span-5 rounded-2xl bg-white/95 border border-slate-200 shadow-lg shadow-slate-200/40 p-5 space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-extrabold text-slate-800 flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center">
+              <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+            </span>
+            <span data-i18n="controlsTitle">স্ট্রোক এবং ট্রেসিং কন্ট্রোল</span>
+          </h2>
+          <button id="btnResetSettings" type="button" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+            <span data-i18n="resetBtn">রিসেট</span>
+          </button>
+        </div>
+
+        <!-- Stroke Width Mode: Auto Original vs Manual -->
+        <div class="p-3.5 rounded-xl bg-gradient-to-br from-indigo-50/80 to-sky-50/70 border border-indigo-200/70 space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <label class="text-xs font-bold text-slate-800" data-i18n="strokeWidthLabel">স্ট্রোক সাইজ (Editable Stroke)</label>
+            <label class="inline-flex items-center gap-1.5 cursor-pointer select-none">
+              <input id="chkAutoStroke" type="checkbox" checked class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500" />
+              <span class="text-xs font-bold text-indigo-700" data-i18n="autoOriginalStroke">অটো (অরিজিনাল সাইজ)</span>
+            </label>
+          </div>
+          <div class="flex items-center gap-3">
+            <input id="rangeStrokeWidth" type="range" min="0.5" max="30" step="0.5" value="4" class="flex-1" />
+            <div class="flex items-center gap-1 bg-white border border-slate-200 rounded-lg px-2 py-1">
+              <input id="numStrokeWidth" type="number" min="0.5" max="60" step="0.5" value="4" class="w-12 text-xs font-bold text-slate-800 text-right focus:outline-none" />
+              <span class="text-[11px] font-semibold text-slate-400">px</span>
+            </div>
+          </div>
+          <div class="grid grid-cols-3 gap-2 pt-1">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 mb-1" data-i18n="capLabel">Stroke Cap</label>
+              <select id="selLineCap" class="w-full text-xs font-semibold bg-white border border-slate-200 rounded-lg px-2 py-1.5">
+                <option value="round" selected>Round</option>
+                <option value="butt">Butt</option>
+                <option value="square">Square</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 mb-1" data-i18n="joinLabel">Stroke Join</label>
+              <select id="selLineJoin" class="w-full text-xs font-semibold bg-white border border-slate-200 rounded-lg px-2 py-1.5">
+                <option value="round" selected>Round</option>
+                <option value="miter">Miter</option>
+                <option value="bevel">Bevel</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 mb-1" data-i18n="colorLabel">Stroke Color</label>
+              <div class="flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg px-2 py-1">
+                <input id="inpStrokeColor" type="color" value="#0f172a" class="w-6 h-5 border-0 p-0 cursor-pointer bg-transparent" />
+                <span id="strokeColorHex" class="text-[11px] font-mono font-semibold text-slate-700">#0f172a</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upscale + Threshold + Curve Smoothness -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+            <div class="flex justify-between text-xs font-bold text-slate-700 mb-1.5">
+              <span data-i18n="upscaleFactor">আপস্কেল (Upscale)</span>
+              <span id="valUpscale" class="text-indigo-600">2×</span>
+            </div>
+            <div class="grid grid-cols-4 gap-1">
+              <button type="button" data-upscale="1" class="up-btn py-1 rounded-md text-xs font-bold border border-slate-200 bg-white text-slate-600">1×</button>
+              <button type="button" data-upscale="2" class="up-btn py-1 rounded-md text-xs font-bold border border-indigo-500 bg-indigo-600 text-white">2×</button>
+              <button type="button" data-upscale="3" class="up-btn py-1 rounded-md text-xs font-bold border border-slate-200 bg-white text-slate-600">3×</button>
+              <button type="button" data-upscale="4" class="up-btn py-1 rounded-md text-xs font-bold border border-slate-200 bg-white text-slate-600">4×</button>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+            <div class="flex justify-between text-xs font-bold text-slate-700 mb-1.5">
+              <span data-i18n="smoothnessLabel">কার্ভ স্মুথনেস</span>
+              <span id="valSmooth" class="text-indigo-600">1.8</span>
+            </div>
+            <input id="rangeSmooth" type="range" min="0.6" max="5.0" step="0.2" value="1.8" class="w-full" />
+          </div>
+
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+            <div class="flex justify-between text-xs font-bold text-slate-700 mb-1.5">
+              <span data-i18n="thresholdLabel">থ্রেশহোল্ড (Binarize)</span>
+              <span id="valThreshold" class="text-indigo-600">Auto</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <input id="rangeThreshold" type="range" min="0" max="245" step="5" value="0" class="flex-1" />
+            </div>
+          </div>
+
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+            <div class="flex justify-between text-xs font-bold text-slate-700 mb-1.5">
+              <span data-i18n="spurPruneLabel">নয়েজ / স্পার ক্লিন</span>
+              <span id="valPrune" class="text-indigo-600">Auto</span>
+            </div>
+            <input id="rangePrune" type="range" min="0" max="20" step="1" value="6" class="w-full" />
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-1">
+          <label class="inline-flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700">
+            <input id="chkInvert" type="checkbox" class="w-4 h-4 rounded text-indigo-600" />
+            <span data-i18n="invertLabel">ডার্ক ব্যাকগ্রাউন্ড ইনভার্ট</span>
+          </label>
+          <button id="btnRetrace" type="button" class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition flex items-center gap-1.5">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+            <span data-i18n="retraceBtn">রি-ট্রেস করুন</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Right: Sequential Folder Batch Processor -->
+      <div class="lg:col-span-7 rounded-2xl bg-white/95 border border-slate-200 shadow-lg shadow-slate-200/40 p-5 flex flex-col">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div>
+            <h2 class="text-sm font-extrabold text-slate-800 flex items-center gap-2">
+              <span class="w-7 h-7 rounded-lg bg-violet-100 text-violet-700 flex items-center justify-center">
+                <i data-lucide="layers" class="w-4 h-4"></i>
+              </span>
+              <span data-i18n="batchTitle">ফোল্ডার ব্যাচ প্রসেসিং (একটা একটা করে অটো-সেভ)</span>
+            </h2>
+            <p id="folderModeHint" class="text-[11px] text-slate-500 mt-0.5" data-i18n="batchSubtitle">
+              ফোল্ডার সিলেক্ট করলে প্রতিটি ইমেজ একে একে প্রসেস হয়ে ওই ফোল্ডারেই SVG/EPS সেভ হবে।
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btnStartBatch" type="button" disabled class="px-3.5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:opacity-40 disabled:cursor-not-allowed text-white shadow-sm transition flex items-center gap-1.5">
+              <i data-lucide="play" class="w-3.5 h-3.5"></i>
+              <span data-i18n="startBatchBtn">ব্যাচ শুরু করুন</span>
+            </button>
+            <button id="btnStopBatch" type="button" class="hidden px-3 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white transition flex items-center gap-1.5">
+              <i data-lucide="square" class="w-3.5 h-3.5"></i>
+              <span data-i18n="stopBatchBtn">থামান</span>
+            </button>
+            <button id="btnDownloadZip" type="button" class="hidden px-3 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white transition flex items-center gap-1.5">
+              <i data-lucide="archive" class="w-3.5 h-3.5"></i>
+              <span>Download All ZIP</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="mb-3">
+          <div class="flex items-center justify-between text-xs font-semibold text-slate-600 mb-1">
+            <span id="batchProgressText">কোনো ফোল্ডার বা ব্যাচ ফাইল সিলেক্ট করা হয়নি</span>
+            <span id="batchProgressPct" class="font-bold text-indigo-600">0%</span>
+          </div>
+          <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200/70">
+            <div id="batchProgressBar" class="h-full w-0 bg-gradient-to-r from-indigo-600 via-blue-500 to-emerald-500 rounded-full transition-all duration-300"></div>
+          </div>
+        </div>
+
+        <!-- Queue List -->
+        <div id="batchQueueList" class="flex-1 min-h-[190px] max-h-[260px] overflow-y-auto custom-scroll rounded-xl border border-slate-200 bg-slate-50/70 p-2.5 space-y-2">
+          <div class="h-full min-h-[165px] flex flex-col items-center justify-center text-center p-4 text-slate-400">
+            <i data-lucide="folder-sync" class="w-9 h-9 mb-2 text-indigo-300"></i>
+            <p class="text-xs font-semibold text-slate-600" data-i18n="emptyQueueTitle">এখনো কোনো ফোল্ডার বা মাল্টি-ইমেজ যোগ করা হয়নি</p>
+            <p class="text-[11px] text-slate-400 mt-1 max-w-md" data-i18n="emptyQueueDesc">
+              উপরের "ফোল্ডার সিলেক্ট (অটো-সেভ)" বাটনে ক্লিক করে আপনার ইমেজ ফোল্ডার দেখিয়ে দিন — সব ইমেজ সিরিয়াল অনুযায়ী কনভার্ট হয়ে একই ফোল্ডারে সেভ হয়ে যাবে।
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 Feature Highlights (Matches Reference Footer) -->
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div class="rounded-2xl bg-white/90 border border-slate-200 p-4 flex items-center gap-3 shadow-sm">
+        <div class="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+          <i data-lucide="crosshair" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <div class="text-xs sm:text-sm font-extrabold text-slate-800">High Accuracy</div>
+          <div class="text-[11px] text-slate-500" data-i18n="feat1">EDT + সেন্টারলাইন স্কেলেটন</div>
+        </div>
+      </div>
+      <div class="rounded-2xl bg-white/90 border border-slate-200 p-4 flex items-center gap-3 shadow-sm">
+        <div class="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+          <i data-lucide="zap" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <div class="text-xs sm:text-sm font-extrabold text-slate-800">Fast Processing</div>
+          <div class="text-[11px] text-slate-500" data-i18n="feat2">ব্রাউজারেই ইনস্ট্যান্ট ব্যাচ</div>
+        </div>
+      </div>
+      <div class="rounded-2xl bg-white/90 border border-slate-200 p-4 flex items-center gap-3 shadow-sm">
+        <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+          <i data-lucide="pen-tool" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <div class="text-xs sm:text-sm font-extrabold text-slate-800">Editable SVG &amp; EPS</div>
+          <div class="text-[11px] text-slate-500" data-i18n="feat3">Illustrator / CorelDRAW রেডি</div>
+        </div>
+      </div>
+      <div class="rounded-2xl bg-white/90 border border-slate-200 p-4 flex items-center gap-3 shadow-sm">
+        <div class="w-11 h-11 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center shrink-0">
+          <i data-lucide="monitor-check" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <div class="text-xs sm:text-sm font-extrabold text-slate-800">Easy to Use</div>
+          <div class="text-[11px] text-slate-500" data-i18n="feat4">১ ক্লিকে ফোল্ডার অটো-সেভ</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 pointer-events-none opacity-0 translate-y-3 transition-all duration-300">
+    <div id="toastInner" class="px-4 py-3 rounded-xl bg-slate-900 text-white text-xs font-semibold shadow-2xl flex items-center gap-2 max-w-sm">
+      <i data-lucide="info" class="w-4 h-4 text-cyan-400 shrink-0"></i>
+      <span id="toastMsg">Notification</span>
+    </div>
+  </div>
+
+  <!-- Free Lifetime GitHub Pages Hosting Modal -->
+  <div id="githubModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center">
+            <i data-lucide="globe" class="w-5 h-5 text-cyan-300"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-extrabold text-slate-900" data-i18n="modalTitle">ফ্রি লাইফটাইম GitHub Pages হোস্টিং গাইড</h3>
+            <p class="text-xs text-slate-500">100% Free Domain + HTTPS + Direct Folder Auto-Save</p>
+          </div>
+        </div>
+        <button id="btnCloseGithubModal" type="button" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-500">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <ol class="space-y-2.5 text-xs sm:text-sm text-slate-700 list-decimal pl-5">
+        <li><strong class="text-slate-900">GitHub অ্যাকাউন্টে লগইন করুন</strong> (<span class="font-mono text-indigo-600">github.com</span>) এবং নতুন একটি <strong>Public Repository</strong> তৈরি করুন (যেমন: <code class="bg-slate-100 px-1.5 py-0.5 rounded">centerline-pro</code>)।</li>
+        <li>এই ডাউনলোড করা <code class="bg-slate-100 px-1.5 py-0.5 rounded font-bold">index.html</code> ফাইলটি ওই রিপোজিটরিতে <strong>Add file → Upload files</strong> দিয়ে আপলোড করে <strong>Commit changes</strong> করুন।</li>
+        <li>রিপোজিটরির <strong>Settings → Pages</strong> মেনুতে যান, <strong>Branch</strong> হিসেবে <code class="bg-slate-100 px-1.5 py-0.5 rounded">main</code> এবং ফোল্ডার <code class="bg-slate-100 px-1.5 py-0.5 rounded">/ (root)</code> সিলেক্ট করে <strong>Save</strong> ক্লিক করুন।</li>
+        <li>১ মিনিটের মধ্যে আপনার স্থায়ী ফ্রি ওয়েবসাইট লিংক চালু হয়ে যাবে: <code class="bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded font-semibold">https://yourname.github.io/centerline-pro/</code></li>
+      </ol>
+
+      <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800">
+        <strong>টিপস:</strong> GitHub Pages-এর HTTPS লিংক থেকে Chrome বা Edge ব্রাউজারে চালালে <strong>"ফোল্ডার সিলেক্ট (অটো-সেভ)"</strong> ফিচারটি সরাসরি আপনার কম্পিউটারের ফোল্ডারেই প্রতিটি SVG ও EPS ফাইল অটোমেটিক সেভ করে দেবে!
+      </div>
+
+      <div class="flex justify-end">
+        <button id="btnOkGithubModal" type="button" class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white transition">বুঝেছি</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function () {
+    'use strict';
+
+    // =========================================================================
+    // 1. I18N (Bengali + English Toggle)
+    // =========================================================================
+    const I18N = {
+      bn: {
+        subtitle: 'রাস্টার ইমেজ থেকে এডিটেবল স্ট্রোক সেন্টারলাইন ভেক্টর (SVG & EPS)',
+        githubBtn: 'ফ্রি GitHub হোস্টিং',
+        dropTitle: 'ইমেজ আপলোড করুন বা ড্র্যাগ করে ছাড়ুন',
+        dropSub: 'JPG, PNG, WebP — এক বা একাধিক আইকন সাপোর্ট করে',
+        selectFolderBtn: 'ফোল্ডার সিলেক্ট (অটো-সেভ)',
+        folderUploadAlt: 'ফোল্ডার আপলোড',
+        formatLabel: 'ফরম্যাট:',
+        bothFmt: 'SVG + EPS',
+        trySamples: 'ডেমো আইকন টেস্ট করুন:',
+        sampleMulti: '৪টি আইকন একসাথে',
+        stage1Title: 'JPEG / Raster Image',
+        stage2Title: 'Centerline Path',
+        stage3Title: 'Perfect Vector',
+        stage1Desc: 'অরিজিনাল রাস্টার + অটো আপস্কেল',
+        controlsTitle: 'স্ট্রোক এবং ট্রেসিং কন্ট্রোল',
+        resetBtn: 'রিসেট',
+        strokeWidthLabel: 'স্ট্রোক সাইজ (Editable Stroke)',
+        autoOriginalStroke: 'অটো (অরিজিনাল সাইজ)',
+        capLabel: 'Stroke Cap',
+        joinLabel: 'Stroke Join',
+        colorLabel: 'Stroke Color',
+        upscaleFactor: 'আপস্কেল (Upscale)',
+        smoothnessLabel: 'কার্ভ স্মুথনেস',
+        thresholdLabel: 'থ্রেশহোল্ড (Binarize)',
+        spurPruneLabel: 'নয়েজ / স্পার ক্লিন',
+        invertLabel: 'ডার্ক ব্যাকগ্রাউন্ড ইনভার্ট',
+        retraceBtn: 'রি-ট্রেস করুন',
+        batchTitle: 'ফোল্ডার ব্যাচ প্রসেসিং (একটা একটা করে অটো-সেভ)',
+        batchSubtitle: 'ফোল্ডার সিলেক্ট করলে প্রতিটি ইমেজ একে একে প্রসেস হয়ে ওই ফোল্ডারেই SVG/EPS সেভ হবে।',
+        startBatchBtn: 'ব্যাচ শুরু করুন',
+        stopBatchBtn: 'থামান',
+        emptyQueueTitle: 'এখনো কোনো ফোল্ডার বা মাল্টি-ইমেজ যোগ করা হয়নি',
+        emptyQueueDesc: 'উপরের "ফোল্ডার সিলেক্ট (অটো-সেভ)" বাটনে ক্লিক করে আপনার ইমেজ ফোল্ডার দেখিয়ে দিন — সব ইমেজ সিরিয়াল অনুযায়ী কনভার্ট হয়ে একই ফোল্ডারে সেভ হয়ে যাবে।',
+        feat1: 'EDT + সেন্টারলাইন স্কেলেটন',
+        feat2: 'ব্রাউজারেই ইনস্ট্যান্ট ব্যাচ',
+        feat3: 'Illustrator / CorelDRAW রেডি',
+        feat4: '১ ক্লিকে ফোল্ডার অটো-সেভ',
+        modalTitle: 'ফ্রি লাইফটাইম GitHub Pages হোস্টিং গাইড'
+      },
+      en: {
+        subtitle: 'Raster Image to Editable-Stroke Centerline Vector (SVG & EPS)',
+        githubBtn: 'Free GitHub Hosting',
+        dropTitle: 'Upload Images or Drag & Drop Here',
+        dropSub: 'JPG, PNG, WebP — Supports single or multi-icon sheets',
+        selectFolderBtn: 'Select Folder (Auto-Save)',
+        folderUploadAlt: 'Upload Folder',
+        formatLabel: 'Format:',
+        bothFmt: 'SVG + EPS',
+        trySamples: 'Test Demo Icons:',
+        sampleMulti: '4 Icons Sheet',
+        stage1Title: 'JPEG / Raster Image',
+        stage2Title: 'Centerline Path',
+        stage3Title: 'Perfect Vector',
+        stage1Desc: 'Original Raster + Auto Upscale',
+        controlsTitle: 'Stroke & Tracing Controls',
+        resetBtn: 'Reset',
+        strokeWidthLabel: 'Stroke Width (Editable)',
+        autoOriginalStroke: 'Auto (Original Size)',
+        capLabel: 'Stroke Cap',
+        joinLabel: 'Stroke Join',
+        colorLabel: 'Stroke Color',
+        upscaleFactor: 'Upscale Factor',
+        smoothnessLabel: 'Curve Smoothness',
+        thresholdLabel: 'Threshold (Binarize)',
+        spurPruneLabel: 'Spur / Noise Prune',
+        invertLabel: 'Invert Dark Background',
+        retraceBtn: 'Re-Trace',
+        batchTitle: 'Sequential Folder Batch Processor (Auto-Save)',
+        batchSubtitle: 'Select a folder to process images one by one and auto-save SVG/EPS into the same folder.',
+        startBatchBtn: 'Start Batch',
+        stopBatchBtn: 'Stop',
+        emptyQueueTitle: 'No folder or batch files queued yet',
+        emptyQueueDesc: 'Click "Select Folder (Auto-Save)" above to pick your image folder — every image converts sequentially and saves directly back into that folder.',
+        feat1: 'EDT + Centerline Skeleton',
+        feat2: 'Instant In-Browser Batch',
+        feat3: 'Illustrator / CorelDRAW Ready',
+        feat4: '1-Click Folder Auto-Save',
+        modalTitle: 'Free Lifetime GitHub Pages Hosting Guide'
+      }
+    };
+
+    // =========================================================================
+    // 2. Application State
+    // =========================================================================
+    const state = {
+      lang: 'bn',
+      outputFormat: 'svg', // 'svg' | 'eps' | 'both'
+      upscale: 2,
+      smoothness: 1.8,
+      threshold: 0, // 0 = Auto Otsu
+      pruneLength: 6,
+      invert: false,
+      autoStroke: true,
+      manualStrokeWidth: 4.0,
+      detectedStrokeWidth: 4.0,
+      lineCap: 'round',
+      lineJoin: 'round',
+      strokeColor: '#0f172a',
+      showSymmetryAxis: true,
+      showHandles: false,
+      zoom: 1,
+
+      // Current loaded image & vector result
+      currentName: 'wifi-icon',
+      currentImageCanvas: null,
+      currentResult: null, // { width, height, paths, detectedStroke, anchorCount, accuracy }
+
+      // Batch state
+      dirHandle: null, // FileSystemDirectoryHandle when using showDirectoryPicker
+      batchItems: [],  // { id, name, file, handle, status, outputs: { svg?, eps? }, strokeWidth, pathsCount }
+      batchRunning: false,
+      batchCancelled: false
+    };
+
+    // Restore saved format preference
+    try {
+      const savedFmt = localStorage.getItem('centerline_output_format');
+      if (savedFmt === 'svg' || savedFmt === 'eps' || savedFmt === 'both') {
+        state.outputFormat = savedFmt;
+      }
+    } catch (e) {}
+
+    // =========================================================================
+    // 3. DOM References
+    // =========================================================================
+    const el = {
+      dropZone: document.getElementById('dropZone'),
+      singleFileInput: document.getElementById('singleFileInput'),
+      fallbackFolderInput: document.getElementById('fallbackFolderInput'),
+      btnSelectFolder: document.getElementById('btnSelectFolder'),
+      btnUploadFolderFallback: document.getElementById('btnUploadFolderFallback'),
+      btnLangToggle: document.getElementById('btnLangToggle'),
+      langLabel: document.getElementById('langLabel'),
+      btnGithubGuide: document.getElementById('btnGithubGuide'),
+      githubModal: document.getElementById('githubModal'),
+      btnCloseGithubModal: document.getElementById('btnCloseGithubModal'),
+      btnOkGithubModal: document.getElementById('btnOkGithubModal'),
+      canvasOriginal: document.getElementById('canvasOriginal'),
+      metaStage1: document.getElementById('metaStage1'),
+      upscaleBadge: document.getElementById('upscaleBadge'),
+      detectedStrokeLabel: document.getElementById('detectedStrokeLabel'),
+      centerlinePreview: document.getElementById('centerlinePreview'),
+      vectorPreview: document.getElementById('vectorPreview'),
+      metaPaths: document.getElementById('metaPaths'),
+      metaAnchors: document.getElementById('metaAnchors'),
+      metaAccuracy: document.getElementById('metaAccuracy'),
+      btnToggleSymmetry: document.getElementById('btnToggleSymmetry'),
+      btnToggleHandles: document.getElementById('btnToggleHandles'),
+      btnZoomIn: document.getElementById('btnZoomIn'),
+      btnZoomOut: document.getElementById('btnZoomOut'),
+      zoomLabel: document.getElementById('zoomLabel'),
+      btnDownloadSVG: document.getElementById('btnDownloadSVG'),
+      btnDownloadEPS: document.getElementById('btnDownloadEPS'),
+      chkAutoStroke: document.getElementById('chkAutoStroke'),
+      rangeStrokeWidth: document.getElementById('rangeStrokeWidth'),
+      numStrokeWidth: document.getElementById('numStrokeWidth'),
+      selLineCap: document.getElementById('selLineCap'),
+      selLineJoin: document.getElementById('selLineJoin'),
+      inpStrokeColor: document.getElementById('inpStrokeColor'),
+      strokeColorHex: document.getElementById('strokeColorHex'),
+      valUpscale: document.getElementById('valUpscale'),
+      rangeSmooth: document.getElementById('rangeSmooth'),
+      valSmooth: document.getElementById('valSmooth'),
+      rangeThreshold: document.getElementById('rangeThreshold'),
+      valThreshold: document.getElementById('valThreshold'),
+      rangePrune: document.getElementById('rangePrune'),
+      valPrune: document.getElementById('valPrune'),
+      chkInvert: document.getElementById('chkInvert'),
+      btnRetrace: document.getElementById('btnRetrace'),
+      btnResetSettings: document.getElementById('btnResetSettings'),
+      statusText: document.getElementById('statusText'),
+      statusBadge: document.getElementById('statusBadge'),
+      btnStartBatch: document.getElementById('btnStartBatch'),
+      btnStopBatch: document.getElementById('btnStopBatch'),
+      btnDownloadZip: document.getElementById('btnDownloadZip'),
+      batchProgressText: document.getElementById('batchProgressText'),
+      batchProgressPct: document.getElementById('batchProgressPct'),
+      batchProgressBar: document.getElementById('batchProgressBar'),
+      batchQueueList: document.getElementById('batchQueueList'),
+      toast: document.getElementById('toast'),
+      toastMsg: document.getElementById('toastMsg')
+    };
+
+    let toastTimer = null;
+    function showToast(msg) {
+      el.toastMsg.textContent = msg;
+      el.toast.classList.remove('opacity-0', 'translate-y-3');
+      el.toast.classList.add('opacity-100', 'translate-y-0');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        el.toast.classList.add('opacity-0', 'translate-y-3');
+        el.toast.classList.remove('opacity-100', 'translate-y-0');
+      }, 3200);
+    }
+
+    function setStatus(text, type) {
+      el.statusText.textContent = text;
+      const dot = el.statusBadge.querySelector('span');
+      el.statusBadge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ' +
+        (type === 'busy'
+          ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+          : type === 'error'
+          ? 'bg-rose-50 text-rose-700 border-rose-200'
+          : 'bg-emerald-50 text-emerald-700 border-emerald-200');
+      if (dot) {
+        dot.className = 'w-2 h-2 rounded-full ' +
+          (type === 'busy' ? 'bg-indigo-500 processing-pulse' : type === 'error' ? 'bg-rose-500' : 'bg-emerald-500');
+      }
+    }
+
+    // =========================================================================
+    // 4. CORE CENTERLINE VECTORIZATION ENGINE (100% Client-Side CV)
+    // =========================================================================
+
+    // 4.1 Upscale with smooth interpolation + gentle unsharp mask for crisp edges
+    function upscaleAndPreprocess(srcCanvas, upscaleFactor) {
+      const origW = srcCanvas.width;
+      const origH = srcCanvas.height;
+      // Keep processing fast and accurate (cap working size to ~1100px max dim)
+      const maxWorkDim = 1800;
+      let effScale = upscaleFactor;
+      if (Math.max(origW, origH) * effScale > maxWorkDim) {
+        effScale = Math.max(1, maxWorkDim / Math.max(origW, origH));
+      }
+      const w = Math.max(16, Math.round(origW * effScale));
+      const h = Math.max(16, Math.round(origH * effScale));
+
+      const work = document.createElement('canvas');
+      work.width = w;
+      work.height = h;
+      const ctx = work.getContext('2d', { willReadFrequently: true });
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, w, h);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(srcCanvas, 0, 0, w, h);
+
+      const imgData = ctx.getImageData(0, 0, w, h);
+      const data = imgData.data;
+
+      // Convert to luminance [0..255]
+      const gray = new Float32Array(w * h);
+      for (let i = 0, p = 0; i < data.length; i += 4, p++) {
+        const a = data[i + 3] / 255;
+        const r = data[i] * a + 255 * (1 - a);
+        const g = data[i + 1] * a + 255 * (1 - a);
+        const b = data[i + 2] * a + 255 * (1 - a);
+        gray[p] = 0.299 * r + 0.587 * g + 0.114 * b;
+      }
+
+      // 3x3 separable Gaussian blur for JPEG noise suppression + Unsharp Mask
+      const blur = new Float32Array(w * h);
+      const tmp = new Float32Array(w * h);
+      for (let y = 0; y < h; y++) {
+        const row = y * w;
+        for (let x = 0; x < w; x++) {
+          const xm = x > 0 ? x - 1 : 0;
+          const xp = x < w - 1 ? x + 1 : w - 1;
+          tmp[row + x] = (gray[row + xm] + 2 * gray[row + x] + gray[row + xp]) * 0.25;
+        }
+      }
+      for (let y = 0; y < h; y++) {
+        const ym = y > 0 ? y - 1 : 0;
+        const yp = y < h - 1 ? y + 1 : h - 1;
+        for (let x = 0; x < w; x++) {
+          blur[y * w + x] = (tmp[ym * w + x] + 2 * tmp[y * w + x] + tmp[yp * w + x]) * 0.25;
+        }
+      }
+      // Subtle edge-preserving sharpen
+      const sharp = new Uint8Array(w * h);
+      for (let i = 0; i < w * h; i++) {
+        const v = gray[i] + 0.45 * (gray[i] - blur[i]);
+        sharp[i] = v < 0 ? 0 : v > 255 ? 255 : Math.round(v);
+      }
+
+      return { gray: sharp, w, h, origW, origH, effScale };
+    }
+
+    // 4.2 Otsu Automatic Thresholding + Binary Mask
+    function binarizeImage(gray, w, h, manualThresh, invert) {
+      let thresh = manualThresh;
+      if (!thresh || thresh <= 0) {
+        const hist = new Uint32Array(256);
+        for (let i = 0; i < gray.length; i++) hist[gray[i]]++;
+        const total = gray.length;
+        let sum = 0;
+        for (let t = 0; t < 256; t++) sum += t * hist[t];
+        let sumB = 0, wB = 0, maxVar = -1, bestT = 128;
+        for (let t = 0; t < 256; t++) {
+          wB += hist[t];
+          if (wB === 0) continue;
+          const wF = total - wB;
+          if (wF === 0) break;
+          sumB += t * hist[t];
+          const mB = sumB / wB;
+          const mF = (sum - sumB) / wF;
+          const between = wB * wF * (mB - mF) * (mB - mF);
+          if (between > maxVar) {
+            maxVar = between;
+            bestT = t;
+          }
+        }
+        thresh = Math.min(230, Math.max(40, bestT));
+      }
+
+      const mask = new Uint8Array(w * h);
+      let fgCount = 0;
+      for (let i = 0; i < gray.length; i++) {
+        const isDark = gray[i] < thresh;
+        const val = invert ? (isDark ? 0 : 1) : (isDark ? 1 : 0);
+        mask[i] = val;
+        fgCount += val;
+      }
+
+      // Clear 1px border to keep thinning boundary-safe
+      for (let x = 0; x < w; x++) {
+        mask[x] = 0;
+        mask[(h - 1) * w + x] = 0;
+      }
+      for (let y = 0; y < h; y++) {
+        mask[y * w] = 0;
+        mask[y * w + (w - 1)] = 0;
+      }
+
+      // Light morphological closing (fill 1px JPEG pinholes inside strokes)
+      const closed = new Uint8Array(mask);
+      for (let y = 1; y < h - 1; y++) {
+        const r = y * w;
+        for (let x = 1; x < w - 1; x++) {
+          if (mask[r + x] === 0) {
+            const sum = mask[r + x - 1] + mask[r + x + 1] + mask[r - w + x] + mask[r + w + x];
+            if (sum >= 3) closed[r + x] = 1;
+          }
+        }
+      }
+      return { mask: closed, thresh, fgCount };
+    }
+
+    // 4.3 Exact 2D Euclidean Distance Transform (Felzenszwalb & Huttenlocher O(N))
+    function computeEDT(mask, w, h) {
+      const INF = 1e12;
+      const g = new Float32Array(w * h);
+      const v = new Int32Array(Math.max(w, h));
+      const z = new Float32Array(Math.max(w, h) + 1);
+      const f = new Float32Array(Math.max(w, h));
+      const d = new Float32Array(Math.max(w, h));
+
+      function edt1d(len) {
+        let k = 0;
+        v[0] = 0;
+        z[0] = -INF;
+        z[1] = INF;
+        for (let q = 1; q < len; q++) {
+          let s = ((f[q] + q * q) - (f[v[k]] + v[k] * v[k])) / (2 * q - 2 * v[k]);
+          while (s <= z[k]) {
+            k--;
+            s = ((f[q] + q * q) - (f[v[k]] + v[k] * v[k])) / (2 * q - 2 * v[k]);
+          }
+          k++;
+          v[k] = q;
+          z[k] = s;
+          z[k + 1] = INF;
+        }
+        k = 0;
+        for (let q = 0; q < len; q++) {
+          while (z[k + 1] < q) k++;
+          const dx = q - v[k];
+          d[q] = dx * dx + f[v[k]];
+        }
+      }
+
+      // Pass 1: Columns
+      for (let x = 0; x < w; x++) {
+        for (let y = 0; y < h; y++) {
+          f[y] = mask[y * w + x] ? INF : 0;
+        }
+        edt1d(h);
+        for (let y = 0; y < h; y++) {
+          g[y * w + x] = d[y];
+        }
+      }
+
+      // Pass 2: Rows
+      const dist = new Float32Array(w * h);
+      for (let y = 0; y < h; y++) {
+        const row = y * w;
+        for (let x = 0; x < w; x++) {
+          f[x] = g[row + x];
+        }
+        edt1d(w);
+        for (let x = 0; x < w; x++) {
+          dist[row + x] = Math.sqrt(d[x]);
+        }
+      }
+      return dist;
+    }
+
+    // 4.4 Zhang-Suen Thinning (Topology-Preserving Medial Axis Skeletonization)
+    function zhangSuenThinning(srcMask, w, h) {
+      const img = new Uint8Array(srcMask);
+      const marker = new Uint8Array(w * h);
+      let changed = true;
+      let iter = 0;
+      const maxIter = 180;
+
+      while (changed && iter < maxIter) {
+        changed = false;
+        iter++;
+
+        for (let step = 0; step < 2; step++) {
+          marker.fill(0);
+          let stepChanged = false;
+
+          for (let y = 1; y < h - 1; y++) {
+            const row = y * w;
+            const rowUp = (y - 1) * w;
+            const rowDn = (y + 1) * w;
+            for (let x = 1; x < w - 1; x++) {
+              const idx = row + x;
+              if (img[idx] === 0) continue;
+
+              const p2 = img[rowUp + x];
+              const p3 = img[rowUp + x + 1];
+              const p4 = img[row + x + 1];
+              const p5 = img[rowDn + x + 1];
+              const p6 = img[rowDn + x];
+              const p7 = img[rowDn + x - 1];
+              const p8 = img[row + x - 1];
+              const p9 = img[rowUp + x - 1];
+
+              const B = p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9;
+              if (B < 2 || B > 6) continue;
+
+              const A =
+                ((p2 === 0 && p3 === 1) ? 1 : 0) +
+                ((p3 === 0 && p4 === 1) ? 1 : 0) +
+                ((p4 === 0 && p5 === 1) ? 1 : 0) +
+                ((p5 === 0 && p6 === 1) ? 1 : 0) +
+                ((p6 === 0 && p7 === 1) ? 1 : 0) +
+                ((p7 === 0 && p8 === 1) ? 1 : 0) +
+                ((p8 === 0 && p9 === 1) ? 1 : 0) +
+                ((p9 === 0 && p2 === 1) ? 1 : 0);
+              if (A !== 1) continue;
+
+              if (step === 0) {
+                if (p2 * p4 * p6 !== 0) continue;
+                if (p4 * p6 * p8 !== 0) continue;
+              } else {
+                if (p2 * p4 * p8 !== 0) continue;
+                if (p2 * p6 * p8 !== 0) continue;
+              }
+
+              marker[idx] = 1;
+              stepChanged = true;
+            }
+          }
+
+          if (stepChanged) {
+            changed = true;
+            for (let i = 0; i < img.length; i++) {
+              if (marker[i]) img[i] = 0;
+            }
+          }
+        }
+      }
+
+      // Remove redundant L-corner staircase pixels so every chain is strictly 1px 8-connected (zero fake degree-3 triangles)
+      for (let pass = 0; pass < 2; pass++) {
+        for (let y = 1; y < h - 1; y++) {
+          const r = y * w;
+          for (let x = 1; x < w - 1; x++) {
+            const idx = r + x;
+            if (!img[idx]) continue;
+            const p2 = img[r - w + x];     // N
+            const p3 = img[r - w + x + 1]; // NE
+            const p4 = img[r + x + 1];     // E
+            const p5 = img[r + w + x + 1]; // SE
+            const p6 = img[r + w + x];     // S
+            const p7 = img[r + w + x - 1]; // SW
+            const p8 = img[r + x - 1];     // W
+            const p9 = img[r - w + x - 1]; // NW
+            // If pixel sits in a 4-connected L-bend (N&E, N&W, S&E, or S&W) and removing it leaves its 8-neighborhood as 1 connected component (A === 1), delete it!
+            const isLCorner = (p2 && p4 && !p7) || (p2 && p8 && !p5) || (p6 && p4 && !p9) || (p6 && p8 && !p3);
+            if (!isLCorner) continue;
+            const B = p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9;
+            if (B < 2) continue;
+            // Count 8-connected components in the 8-neighborhood (using 4-connectivity around the ring + diagonal skips across 4-neighbors)
+            const ring = [p2, p3, p4, p5, p6, p7, p8, p9];
+            // Check if all present neighbors remain 8-connected to each other without center pixel
+            const coords = [[0,-1],[1,-1],[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1]];
+            const present = [];
+            for (let k = 0; k < 8; k++) if (ring[k]) present.push(k);
+            const seen = new Set([present[0]]);
+            const stack = [present[0]];
+            while (stack.length) {
+              const cur = stack.pop();
+              const [cx, cy] = coords[cur];
+              for (const nxt of present) {
+                if (seen.has(nxt)) continue;
+                const [nx, ny] = coords[nxt];
+                if (Math.abs(cx - nx) <= 1 && Math.abs(cy - ny) <= 1) {
+                  seen.add(nxt);
+                  stack.push(nxt);
+                }
+              }
+            }
+            if (seen.size === present.length) {
+              img[idx] = 0;
+            }
+          }
+        }
+      }
+
+      return img;
+    }
+
+    // 4.5 Prune short skeleton spurs (hairs at thick stroke corners/caps)
+    function pruneSkeletonSpurs(skel, w, h, maxSpurLen) {
+      if (maxSpurLen <= 0) return skel;
+      const dx8 = [-1, 0, 1, 1, 1, 0, -1, -1];
+      const dy8 = [-1, -1, -1, 0, 1, 1, 1, 0];
+
+      function neighbors(idx) {
+        const x = idx % w, y = (idx / w) | 0;
+        const res = [];
+        for (let k = 0; k < 8; k++) {
+          const nx = x + dx8[k], ny = y + dy8[k];
+          if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
+            const ni = ny * w + nx;
+            if (skel[ni]) res.push(ni);
+          }
+        }
+        return res;
+      }
+
+      for (let pass = 0; pass < 3; pass++) {
+        const endpoints = [];
+        for (let i = 0; i < skel.length; i++) {
+          if (skel[i] && neighbors(i).length === 1) endpoints.push(i);
+        }
+        let removedAny = false;
+        for (const ep of endpoints) {
+          if (!skel[ep]) continue;
+          const branch = [ep];
+          let prev = -1;
+          let curr = ep;
+          let hitJunction = false;
+
+          while (branch.length <= maxSpurLen) {
+            const nb = neighbors(curr).filter(n => n !== prev);
+            if (nb.length === 0) break;
+            if (nb.length > 1) {
+              hitJunction = true;
+              break;
+            }
+            const next = nb[0];
+            if (neighbors(next).length >= 3) {
+              hitJunction = true;
+              break;
+            }
+            branch.push(next);
+            prev = curr;
+            curr = next;
+          }
+
+          if (hitJunction && branch.length <= maxSpurLen) {
+            for (const p of branch) skel[p] = 0;
+            removedAny = true;
+          }
+        }
+        if (!removedAny) break;
+      }
+      return skel;
+    }
+
+    // 4.6 Graph-Based Skeleton-to-Polyline Extraction (Multi-Icon + Loops + Junction Continuation)
+    function extractPolylines(skel, w, h) {
+      const dx8 = [0, 1, 1, 1, 0, -1, -1, -1];
+      const dy8 = [-1, -1, 0, 1, 1, 1, 0, -1];
+
+      const adj = new Map();
+      for (let y = 1; y < h - 1; y++) {
+        const r = y * w;
+        for (let x = 1; x < w - 1; x++) {
+          const idx = r + x;
+          if (!skel[idx]) continue;
+          const nbs = [];
+          const hasN = skel[(y - 1) * w + x];
+          const hasE = skel[y * w + (x + 1)];
+          const hasS = skel[(y + 1) * w + x];
+          const hasW = skel[y * w + (x - 1)];
+          for (let k = 0; k < 8; k++) {
+            // Skip diagonal shortcut if both flanking 4-neighbors exist (prevents triangle junctions)
+            if (k === 1 && (hasN || hasE)) continue;
+            if (k === 3 && (hasS || hasE)) continue;
+            if (k === 5 && (hasS || hasW)) continue;
+            if (k === 7 && (hasN || hasW)) continue;
+            const ni = (y + dy8[k]) * w + (x + dx8[k]);
+            if (skel[ni]) nbs.push(ni);
+          }
+          if (nbs.length > 0) adj.set(idx, nbs);
+        }
+      }
+
+      const visitedEdge = new Set();
+      function edgeKey(a, b) {
+        return a < b ? a + '_' + b : b + '_' + a;
+      }
+
+      const rawChains = [];
+
+      function traceFrom(start, next) {
+        const pts = [{ x: start % w, y: (start / w) | 0 }];
+        visitedEdge.add(edgeKey(start, next));
+        let prev = start;
+        let curr = next;
+        let closed = false;
+
+        while (true) {
+          pts.push({ x: curr % w, y: (curr / w) | 0 });
+          const nbs = adj.get(curr) || [];
+          if (nbs.length !== 2) {
+            // Reached endpoint or junction
+            break;
+          }
+          const nxt = nbs[0] === prev ? nbs[1] : nbs[0];
+          const ek = edgeKey(curr, nxt);
+          if (visitedEdge.has(ek)) {
+            if (nxt === start) closed = true;
+            break;
+          }
+          visitedEdge.add(ek);
+          prev = curr;
+          curr = nxt;
+          if (curr === start) {
+            closed = true;
+            break;
+          }
+        }
+        return { pts, closed, startIdx: start, endIdx: curr };
+      }
+
+      // 1) Trace starting from all endpoints (deg === 1) and junctions (deg >= 3)
+      for (const [idx, nbs] of adj.entries()) {
+        if (nbs.length !== 2) {
+          for (const nb of nbs) {
+            if (!visitedEdge.has(edgeKey(idx, nb))) {
+              const chain = traceFrom(idx, nb);
+              if (chain.pts.length >= 2) rawChains.push(chain);
+            }
+          }
+        }
+      }
+
+      // 2) Trace remaining pure closed loops (every pixel has deg === 2)
+      for (const [idx, nbs] of adj.entries()) {
+        for (const nb of nbs) {
+          if (!visitedEdge.has(edgeKey(idx, nb))) {
+            const chain = traceFrom(idx, nb);
+            if (chain.pts.length >= 4) {
+              chain.closed = true;
+              rawChains.push(chain);
+            }
+          }
+        }
+      }
+
+      // 3) Collapse tiny X-crossing bridge segments & merge collinear chains across junctions
+      const cleanedChains = collapseShortJunctionBridges(rawChains);
+      return mergeJunctionChains(cleanedChains);
+    }
+
+    // Collapse tiny bridge segments between two nearby Y-junctions into a clean X-crossing center
+    function collapseShortJunctionBridges(chains) {
+      if (chains.length <= 2) return chains;
+      const degMap = new Map();
+      const inc = (idx) => degMap.set(idx, (degMap.get(idx) || 0) + 1);
+      for (const c of chains) {
+        if (!c.closed) { inc(c.startIdx); inc(c.endIdx); }
+      }
+      const remapped = new Map();
+      const keep = [];
+      for (const c of chains) {
+        if (!c.closed && c.pts.length <= 7 && (degMap.get(c.startIdx) || 0) >= 3 && (degMap.get(c.endIdx) || 0) >= 3) {
+          const mid = {
+            x: 0.5 * (c.pts[0].x + c.pts[c.pts.length - 1].x),
+            y: 0.5 * (c.pts[0].y + c.pts[c.pts.length - 1].y)
+          };
+          remapped.set(c.startIdx, mid);
+          remapped.set(c.endIdx, mid);
+          continue; // drop tiny slanted bridge
+        }
+        keep.push(c);
+      }
+      if (remapped.size > 0) {
+        for (const c of keep) {
+          if (c.closed) continue;
+          if (remapped.has(c.startIdx)) c.pts[0] = { ...remapped.get(c.startIdx) };
+          if (remapped.has(c.endIdx)) c.pts[c.pts.length - 1] = { ...remapped.get(c.endIdx) };
+        }
+      }
+      return keep;
+    }
+
+    function mergeJunctionChains(chains) {
+      if (chains.length <= 1) return chains;
+      // Group open chain endpoints by pixel index
+      const byNode = new Map();
+      chains.forEach((c, i) => {
+        if (c.closed) return;
+        if (!byNode.has(c.startIdx)) byNode.set(c.startIdx, []);
+        if (!byNode.has(c.endIdx)) byNode.set(c.endIdx, []);
+        byNode.get(c.startIdx).push({ chainIdx: i, atStart: true });
+        byNode.get(c.endIdx).push({ chainIdx: i, atStart: false });
+      });
+
+      function tangentAway(chain, atStart) {
+        const pts = chain.pts;
+        const n = pts.length;
+        // Skip first 2-4 pixels right at the junction where Zhang-Suen pinches T-junctions!
+        const skip = n > 14 ? 4 : n > 8 ? 2 : 0;
+        const span = Math.min(n - 1, skip + 9);
+        const p0 = atStart ? pts[skip] : pts[n - 1 - skip];
+        const p1 = atStart ? pts[span] : pts[n - 1 - span];
+        const dx = p1.x - p0.x, dy = p1.y - p0.y;
+        const len = Math.hypot(dx, dy) || 1;
+        return { x: dx / len, y: dy / len };
+      }
+
+      // Simple greedy merge for well-aligned pairs (dot < -0.78 => angle > ~141 deg)
+      const merged = new Array(chains.length).fill(false);
+      const active = chains.map(c => ({ pts: c.pts.slice(), closed: c.closed }));
+
+      let didMerge = true;
+      let guard = 0;
+      while (didMerge && guard < 100) {
+        didMerge = false;
+        guard++;
+        for (let i = 0; i < active.length; i++) {
+          if (merged[i] || active[i].closed || active[i].pts.length < 3) continue;
+          const a = active[i];
+          const aEnd = a.pts[a.pts.length - 1];
+          const ta = tangentAway(a, false);
+
+          let bestJ = -1, bestFlip = false, bestDot = -0.72;
+          for (let j = 0; j < active.length; j++) {
+            if (i === j || merged[j] || active[j].closed || active[j].pts.length < 3) continue;
+            const b = active[j];
+            const bStart = b.pts[0];
+            const bEnd = b.pts[b.pts.length - 1];
+            if (Math.hypot(aEnd.x - bStart.x, aEnd.y - bStart.y) <= 2.2) {
+              const tb = tangentAway(b, true);
+              const dot = ta.x * tb.x + ta.y * tb.y;
+              if (dot < bestDot) {
+                bestDot = dot;
+                bestJ = j;
+                bestFlip = false;
+              }
+            }
+            if (Math.hypot(aEnd.x - bEnd.x, aEnd.y - bEnd.y) <= 2.2) {
+              const tb = tangentAway(b, false);
+              const dot = ta.x * tb.x + ta.y * tb.y;
+              if (dot < bestDot) {
+                bestDot = dot;
+                bestJ = j;
+                bestFlip = true;
+              }
+            }
+          }
+
+          if (bestJ !== -1) {
+            const bPts = bestFlip ? active[bestJ].pts.slice().reverse() : active[bestJ].pts;
+            a.pts = a.pts.concat(bPts.slice(1));
+            merged[bestJ] = true;
+            // Check if newly merged chain forms a closed loop
+            if (Math.hypot(a.pts[0].x - a.pts[a.pts.length - 1].x, a.pts[0].y - a.pts[a.pts.length - 1].y) <= 2.5 && a.pts.length > 8) {
+              a.closed = true;
+              a.pts.pop();
+            }
+            didMerge = true;
+          }
+        }
+      }
+
+      return active.filter((_, i) => !merged[i]);
+    }
+
+    // 4.7 Ultra-Clean Centerline Geometry Engine:
+    //     Sub-Pixel EDT Ridge Snapping -> Uniform Resampling -> Dual-Scale Corner Detection ->
+    //     Taubin Non-Shrinking Smoothing -> Straight-Line & H/V Axis Snap -> Exact Corner Intersection ->
+    //     Exact Circle/Arc Fitting -> Philip Schneider Least-Squares Cubic Bézier (Seamless C1) ->
+    //     Anchor Consolidation
+
+    function snapToSubpixelEDTRidge(pts, edt, w, h, closed) {
+      const n = pts.length;
+      if (n < 3) return pts.map(p => ({ x: p.x, y: p.y }));
+      const out = new Array(n);
+      for (let i = 0; i < n; i++) {
+        const p = pts[i];
+        const ix = Math.round(p.x);
+        const iy = Math.round(p.y);
+        if (ix <= 1 || ix >= w - 2 || iy <= 1 || iy >= h - 2) {
+          out[i] = { x: p.x, y: p.y };
+          continue;
+        }
+        const prev = pts[(i - 1 + n) % n];
+        const next = pts[(i + 1) % n];
+        let tx = (!closed && i === 0) ? (next.x - p.x) : (!closed && i === n - 1) ? (p.x - prev.x) : (next.x - prev.x);
+        let ty = (!closed && i === 0) ? (next.y - p.y) : (!closed && i === n - 1) ? (p.y - prev.y) : (next.y - prev.y);
+        const tl = Math.hypot(tx, ty) || 1;
+        const nx = -ty / tl;
+        const ny = tx / tl;
+
+        function sampleEDT(fx, fy) {
+          const x0 = Math.floor(fx), y0 = Math.floor(fy);
+          const dx = fx - x0, dy = fy - y0;
+          const v00 = edt[y0 * w + x0];
+          const v10 = edt[y0 * w + x0 + 1];
+          const v01 = edt[(y0 + 1) * w + x0];
+          const v11 = edt[(y0 + 1) * w + x0 + 1];
+          return (v00 * (1 - dx) + v10 * dx) * (1 - dy) + (v01 * (1 - dx) + v11 * dx) * dy;
+        }
+
+        const fm = sampleEDT(p.x - nx, p.y - ny);
+        const f0 = sampleEDT(p.x, p.y);
+        const fp = sampleEDT(p.x + nx, p.y + ny);
+        const denom = (fm - 2 * f0 + fp);
+        let shift = 0;
+        if (denom < -1e-4) {
+          shift = Math.max(-0.65, Math.min(0.65, 0.5 * (fm - fp) / denom));
+        }
+        out[i] = { x: p.x + nx * shift, y: p.y + ny * shift };
+      }
+      return out;
+    }
+
+    function taubinSmooth(pts, closed, iterations) {
+      const n = pts.length;
+      if (n < 4) return pts.map(p => ({ x: p.x, y: p.y }));
+      let cur = pts.map(p => ({ x: p.x, y: p.y }));
+      const lambda = 0.48;
+      const mu = -0.50;
+
+      function laplacianStep(arr, factor) {
+        const res = new Array(n);
+        for (let i = 0; i < n; i++) {
+          if (!closed && (i === 0 || i === n - 1)) {
+            res[i] = { x: arr[i].x, y: arr[i].y };
+            continue;
+          }
+          const prev = arr[(i - 1 + n) % n];
+          const next = arr[(i + 1) % n];
+          const avgX = 0.5 * (prev.x + next.x);
+          const avgY = 0.5 * (prev.y + next.y);
+          res[i] = {
+            x: arr[i].x + factor * (avgX - arr[i].x),
+            y: arr[i].y + factor * (avgY - arr[i].y)
+          };
+        }
+        return res;
+      }
+
+      for (let it = 0; it < iterations; it++) {
+        cur = laplacianStep(cur, lambda);
+        cur = laplacianStep(cur, mu);
+      }
+      return cur;
+    }
+
+    function resampleUniform(pts, closed, spacing) {
+      const n = pts.length;
+      if (n < 3) return pts.slice();
+      const seq = closed ? pts.concat([pts[0]]) : pts;
+      const cum = [0];
+      for (let i = 1; i < seq.length; i++) {
+        cum.push(cum[i - 1] + Math.hypot(seq[i].x - seq[i - 1].x, seq[i].y - seq[i - 1].y));
+      }
+      const totalLen = cum[cum.length - 1];
+      if (totalLen < spacing * 2) return pts.slice();
+      const count = Math.max(4, Math.round(totalLen / spacing));
+      const step = totalLen / count;
+      const out = [];
+      let seg = 0;
+      const limit = closed ? count : count + 1;
+      for (let k = 0; k < limit; k++) {
+        const target = Math.min(totalLen, k * step);
+        while (seg < cum.length - 2 && cum[seg + 1] < target) seg++;
+        const d0 = cum[seg], d1 = cum[seg + 1];
+        const t = d1 > d0 ? (target - d0) / (d1 - d0) : 0;
+        out.push({
+          x: seq[seg].x + (seq[seg + 1].x - seq[seg].x) * t,
+          y: seq[seg].y + (seq[seg + 1].y - seq[seg].y) * t
+        });
+      }
+      return out;
+    }
+
+    // Dual-scale sharp corner detector: eliminates false jitter corners while catching true corners crisply
+    function detectCorners(pts, closed, winSmall, angleThreshDeg) {
+      const n = pts.length;
+      const winLarge = Math.min(Math.floor(n / 3), Math.round(winSmall * 1.8));
+      const corners = [];
+      if (n < winSmall * 2 + 2) return corners;
+      const scores = new Float32Array(n);
+
+      function turnAt(i, win) {
+        if (!closed && (i < win || i >= n - win)) return 0;
+        const pPrev = pts[(i - win + n) % n];
+        const pCurr = pts[i];
+        const pNext = pts[(i + win) % n];
+        const v1x = pCurr.x - pPrev.x, v1y = pCurr.y - pPrev.y;
+        const v2x = pNext.x - pCurr.x, v2y = pNext.y - pCurr.y;
+        const l1 = Math.hypot(v1x, v1y), l2 = Math.hypot(v2x, v2y);
+        if (l1 < 1e-3 || l2 < 1e-3) return 0;
+        const cosA = Math.max(-1, Math.min(1, (v1x * v2x + v1y * v2y) / (l1 * l2)));
+        return Math.acos(cosA) * (180 / Math.PI);
+      }
+
+      for (let i = 0; i < n; i++) {
+        const aSmall = turnAt(i, winSmall);
+        if (aSmall < angleThreshDeg) continue;
+        const aLarge = winLarge > winSmall ? turnAt(i, winLarge) : aSmall;
+        // Require consistent sharp turn at both scales (filters out pixel wobble!)
+        if (aLarge >= angleThreshDeg * 0.68) {
+          scores[i] = aSmall + 0.5 * aLarge;
+        }
+      }
+
+      const nmsWin = Math.max(winSmall, Math.round(winSmall * 1.3));
+      for (let i = 0; i < n; i++) {
+        if (scores[i] <= 0) continue;
+        let isMax = true;
+        for (let k = -nmsWin; k <= nmsWin; k++) {
+          if (k === 0) continue;
+          const j = (i + k + n) % n;
+          if (!closed && (i + k < 0 || i + k >= n)) continue;
+          if (scores[j] > scores[i] || (scores[j] === scores[i] && j < i)) {
+            isMax = false;
+            break;
+          }
+        }
+        if (isMax) corners.push(i);
+      }
+      return corners;
+    }
+
+    // Straight line fit using total least-squares (orthogonal regression) + H/V axis snap (<2.5°)
+    function tryFitStraightLine(pts, maxErr) {
+      if (pts.length < 2) return null;
+      // Fit line using interior points if long enough (avoids corner/endcap skeleton pull!)
+      const trim = pts.length > 10 ? Math.min(3, Math.floor(pts.length * 0.12)) : 0;
+      const core = pts.slice(trim, pts.length - trim);
+      let mx = 0, my = 0;
+      for (const p of core) { mx += p.x; my += p.y; }
+      mx /= core.length; my /= core.length;
+
+      let sxx = 0, syy = 0, sxy = 0;
+      for (const p of core) {
+        const dx = p.x - mx, dy = p.y - my;
+        sxx += dx * dx; syy += dy * dy; sxy += dx * dy;
+      }
+      let angle = 0.5 * Math.atan2(2 * sxy, sxx - syy);
+      // Snap nearly horizontal or vertical lines (< 2.4 degrees) to exact H/V!
+      const deg = ((angle * 180 / Math.PI) % 180 + 180) % 180;
+      if (deg < 2.4 || deg > 177.6) angle = 0;
+      else if (Math.abs(deg - 90) < 2.4) angle = Math.PI / 2;
+
+      const ux = Math.cos(angle), uy = Math.sin(angle);
+      const nx = -uy, ny = ux;
+
+      // Verify perpendicular deviation of ALL points (excluding tiny 1px endcap hook)
+      for (let i = 0; i < pts.length; i++) {
+        const dev = Math.abs((pts[i].x - mx) * nx + (pts[i].y - my) * ny);
+        const allow = (i === 0 || i === pts.length - 1) ? maxErr * 1.45 : maxErr;
+        if (dev > allow) return null;
+      }
+
+      // Project endpoints onto the clean regression line
+      const proj = (p) => {
+        const t = (p.x - mx) * ux + (p.y - my) * uy;
+        return { x: mx + t * ux, y: my + t * uy };
+      };
+      const p0 = proj(pts[0]);
+      const p1 = proj(pts[pts.length - 1]);
+      return {
+        anchors: [p0, p1],
+        segments: [{ type: 'L', p1: p0, p2: p1 }]
+      };
+    }
+
+    // Algebraic Kåsa circle fit -> exact minimal cubic Béziers for circles & circular arcs
+    function tryFitCircleOrArc(pts, closed, maxErr) {
+      const n = pts.length;
+      if (n < 7) return null;
+
+      let mx = 0, my = 0;
+      for (const p of pts) { mx += p.x; my += p.y; }
+      mx /= n; my /= n;
+
+      let Suu = 0, Suv = 0, Svv = 0, Suuu = 0, Svvv = 0, Suvv = 0, Svuu = 0;
+      for (const p of pts) {
+        const u = p.x - mx, v = p.y - my;
+        const uu = u * u, vv = v * v;
+        Suu += uu; Suv += u * v; Svv += vv;
+        Suuu += uu * u; Svvv += vv * v;
+        Suvv += u * vv; Svuu += v * uu;
+      }
+      const det = Suu * Svv - Suv * Suv;
+      if (Math.abs(det) < 1e-6) return null;
+
+      const rhs1 = 0.5 * (Suuu + Suvv);
+      const rhs2 = 0.5 * (Svvv + Svuu);
+      const uc = (rhs1 * Svv - rhs2 * Suv) / det;
+      const vc = (Suu * rhs2 - Suv * rhs1) / det;
+      const cx = mx + uc;
+      const cy = my + vc;
+      const R = Math.sqrt(uc * uc + vc * vc + (Suu + Svv) / n);
+      if (!isFinite(R) || R < 3 || R > 2500) return null;
+
+      const tol = Math.max(maxErr, R * 0.025);
+      for (const p of pts) {
+        if (Math.abs(Math.hypot(p.x - cx, p.y - cy) - R) > tol) return null;
+      }
+
+      function arcToBeziers(startA, sweepA) {
+        const numSegs = Math.max(1, Math.ceil(Math.abs(sweepA) / (Math.PI / 2 + 0.01)));
+        const dA = sweepA / numSegs;
+        const k = (4 / 3) * Math.tan(dA / 4);
+        const anchors = [];
+        const segments = [];
+        for (let s = 0; s < numSegs; s++) {
+          const a0 = startA + s * dA;
+          const a1 = a0 + dA;
+          const cos0 = Math.cos(a0), sin0 = Math.sin(a0);
+          const cos1 = Math.cos(a1), sin1 = Math.sin(a1);
+          const p1 = { x: cx + R * cos0, y: cy + R * sin0 };
+          const p2 = { x: cx + R * cos1, y: cy + R * sin1 };
+          const cp1 = { x: p1.x - k * R * sin0, y: p1.y + k * R * cos0 };
+          const cp2 = { x: p2.x + k * R * sin1, y: p2.y - k * R * cos1 };
+          if (s === 0) anchors.push(p1);
+          if (!(closed && s === numSegs - 1)) anchors.push(p2);
+          segments.push({ type: 'C', p1, cp1, cp2, p2 });
+        }
+        return { anchors, segments };
+      }
+
+      if (closed) {
+        let totalSweep = 0;
+        for (let i = 0; i < n; i++) {
+          const a1 = Math.atan2(pts[i].y - cy, pts[i].x - cx);
+          const a2 = Math.atan2(pts[(i + 1) % n].y - cy, pts[(i + 1) % n].x - cx);
+          let da = a2 - a1;
+          while (da > Math.PI) da -= 2 * Math.PI;
+          while (da < -Math.PI) da += 2 * Math.PI;
+          totalSweep += da;
+        }
+        if (Math.abs(Math.abs(totalSweep) - 2 * Math.PI) > 0.35) return null;
+        return arcToBeziers(-Math.PI / 2, totalSweep > 0 ? 2 * Math.PI : -2 * Math.PI);
+      } else {
+        let totalSweep = 0;
+        for (let i = 0; i < n - 1; i++) {
+          const a1 = Math.atan2(pts[i].y - cy, pts[i].x - cx);
+          const a2 = Math.atan2(pts[i + 1].y - cy, pts[i + 1].x - cx);
+          let da = a2 - a1;
+          while (da > Math.PI) da -= 2 * Math.PI;
+          while (da < -Math.PI) da += 2 * Math.PI;
+          totalSweep += da;
+        }
+        if (Math.abs(totalSweep) < 0.36 || Math.abs(totalSweep) > 6.1) return null;
+        const aStart = Math.atan2(pts[0].y - cy, pts[0].x - cx);
+        return arcToBeziers(aStart, totalSweep);
+      }
+    }
+
+    // Philip Schneider's Iterative Least-Squares Cubic Bézier Fitter with Stable Tangents & Seamless C1 Loop Support
+    function schneiderFitCubic(pts, maxError, forcedStartTan, forcedEndTan) {
+      if (pts.length < 2) return [];
+      if (pts.length === 2) return [{ type: 'L', p1: pts[0], p2: pts[1] }];
+
+      function vSub(a, b) { return { x: a.x - b.x, y: a.y - b.y }; }
+      function vAdd(a, b) { return { x: a.x + b.x, y: a.y + b.y }; }
+      function vScale(a, s) { return { x: a.x * s, y: a.y * s }; }
+      function vDot(a, b) { return a.x * b.x + a.y * b.y; }
+      function vLen(a) { return Math.hypot(a.x, a.y); }
+      function vNorm(a) { const l = vLen(a) || 1; return { x: a.x / l, y: a.y / l }; }
+
+      function evalBezier(bez, t) {
+        const mt = 1 - t, mt2 = mt * mt, t2 = t * t;
+        return {
+          x: mt2 * mt * bez[0].x + 3 * mt2 * t * bez[1].x + 3 * mt * t2 * bez[2].x + t2 * t * bez[3].x,
+          y: mt2 * mt * bez[0].y + 3 * mt2 * t * bez[1].y + 3 * mt * t2 * bez[2].y + t2 * t * bez[3].y
+        };
+      }
+      function evalBezierD1(bez, t) {
+        const mt = 1 - t;
+        return {
+          x: 3 * mt * mt * (bez[1].x - bez[0].x) + 6 * mt * t * (bez[2].x - bez[1].x) + 3 * t * t * (bez[3].x - bez[2].x),
+          y: 3 * mt * mt * (bez[1].y - bez[0].y) + 6 * mt * t * (bez[2].y - bez[1].y) + 3 * t * t * (bez[3].y - bez[2].y)
+        };
+      }
+      function evalBezierD2(bez, t) {
+        const mt = 1 - t;
+        return {
+          x: 6 * mt * (bez[2].x - 2 * bez[1].x + bez[0].x) + 6 * t * (bez[3].x - 2 * bez[2].x + bez[1].x),
+          y: 6 * mt * (bez[2].y - 2 * bez[1].y + bez[0].y) + 6 * t * (bez[3].y - 2 * bez[2].y + bez[1].y)
+        };
+      }
+
+      function chordLengthParam(d, first, last) {
+        const u = new Float64Array(last - first + 1);
+        u[0] = 0;
+        for (let i = first + 1; i <= last; i++) {
+          u[i - first] = u[i - first - 1] + vLen(vSub(d[i], d[i - 1]));
+        }
+        const total = u[last - first] || 1;
+        for (let i = 1; i <= last - first; i++) u[i] /= total;
+        return u;
+      }
+
+      function generateBezier(d, first, last, uPrime, tHat1, tHat2) {
+        const nPts = last - first + 1;
+        const p0 = d[first], p3 = d[last];
+        const C = [[0, 0], [0, 0]];
+        const X = [0, 0];
+
+        for (let i = 0; i < nPts; i++) {
+          const t = uPrime[i], mt = 1 - t;
+          const b0 = mt * mt * mt;
+          const b1 = 3 * mt * mt * t;
+          const b2 = 3 * mt * t * t;
+          const b3 = t * t * t;
+          const a1 = vScale(tHat1, b1);
+          const a2 = vScale(tHat2, b2);
+          C[0][0] += vDot(a1, a1);
+          C[0][1] += vDot(a1, a2);
+          C[1][0] = C[0][1];
+          C[1][1] += vDot(a2, a2);
+
+          const tmp = vSub(d[first + i], vAdd(vScale(p0, b0 + b1), vScale(p3, b2 + b3)));
+          X[0] += vDot(a1, tmp);
+          X[1] += vDot(a2, tmp);
+        }
+
+        const detC0C1 = C[0][0] * C[1][1] - C[1][0] * C[0][1];
+        const detC0X = C[0][0] * X[1] - C[1][0] * X[0];
+        const detXC1 = X[0] * C[1][1] - X[1] * C[0][1];
+
+        let alphaL = Math.abs(detC0C1) > 1e-9 ? detXC1 / detC0C1 : 0;
+        let alphaR = Math.abs(detC0C1) > 1e-9 ? detC0X / detC0C1 : 0;
+
+        const segLen = vLen(vSub(p3, p0));
+        const eps = 1e-6 * segLen;
+        if (alphaL < eps || alphaR < eps || alphaL > segLen * 1.45 || alphaR > segLen * 1.45) {
+          const dist = segLen / 3.0;
+          alphaL = dist;
+          alphaR = dist;
+        }
+        return [p0, vAdd(p0, vScale(tHat1, alphaL)), vAdd(p3, vScale(tHat2, alphaR)), p3];
+      }
+
+      function computeMaxError(d, first, last, bez, u) {
+        let maxDistSq = 0;
+        let splitPoint = Math.floor((first + last) / 2);
+        for (let i = first + 1; i < last; i++) {
+          const P = evalBezier(bez, u[i - first]);
+          const dx = P.x - d[i].x, dy = P.y - d[i].y;
+          const distSq = dx * dx + dy * dy;
+          if (distSq >= maxDistSq) {
+            maxDistSq = distSq;
+            splitPoint = i;
+          }
+        }
+        return { maxDistSq, splitPoint };
+      }
+
+      function reparameterize(d, first, last, u, bez) {
+        const uOut = new Float64Array(u.length);
+        for (let i = first; i <= last; i++) {
+          const t = u[i - first];
+          const Q = evalBezier(bez, t);
+          const Q1 = evalBezierD1(bez, t);
+          const Q2 = evalBezierD2(bez, t);
+          const diff = vSub(Q, d[i]);
+          const num = vDot(diff, Q1);
+          const den = vDot(Q1, Q1) + vDot(diff, Q2);
+          let nt = Math.abs(den) > 1e-9 ? t - num / den : t;
+          uOut[i - first] = Math.max(0, Math.min(1, nt));
+        }
+        return uOut;
+      }
+
+      // Deeper weighted tangent window (skips 1px endcap hook if chain is long enough)
+      function estimateTangent(d, idx, dir, first, last) {
+        const avail = Math.abs(dir > 0 ? last - idx : idx - first);
+        const span = Math.min(6, avail);
+        if (span < 1) return { x: 1, y: 0 };
+        const startK = avail >= 8 ? 2 : 1;
+        let sx = 0, sy = 0;
+        for (let k = startK; k <= span; k++) {
+          const w = (span - k + 1.5);
+          const j = idx + dir * k;
+          sx += w * (d[j].x - d[idx].x);
+          sy += w * (d[j].y - d[idx].y);
+        }
+        return vNorm({ x: sx, y: sy });
+      }
+
+      const errSq = maxError * maxError;
+      const iterErrSq = errSq * 5.0;
+      const results = [];
+
+      function fitCubic(d, first, last, tHat1, tHat2, depth) {
+        if (last - first === 1) {
+          const dist = vLen(vSub(d[last], d[first])) / 3.0;
+          results.push({
+            type: 'C',
+            p1: d[first],
+            cp1: vAdd(d[first], vScale(tHat1, dist)),
+            cp2: vAdd(d[last], vScale(tHat2, dist)),
+            p2: d[last]
+          });
+          return;
+        }
+
+        let u = chordLengthParam(d, first, last);
+        let bez = generateBezier(d, first, last, u, tHat1, tHat2);
+        let { maxDistSq, splitPoint } = computeMaxError(d, first, last, bez, u);
+
+        if (maxDistSq < errSq) {
+          results.push({ type: 'C', p1: bez[0], cp1: bez[1], cp2: bez[2], p2: bez[3] });
+          return;
+        }
+
+        if (maxDistSq < iterErrSq) {
+          for (let it = 0; it < 5; it++) {
+            u = reparameterize(d, first, last, u, bez);
+            bez = generateBezier(d, first, last, u, tHat1, tHat2);
+            const res = computeMaxError(d, first, last, bez, u);
+            maxDistSq = res.maxDistSq;
+            splitPoint = res.splitPoint;
+            if (maxDistSq < errSq) {
+              results.push({ type: 'C', p1: bez[0], cp1: bez[1], cp2: bez[2], p2: bez[3] });
+              return;
+            }
+          }
+        }
+
+        if (depth >= 10 || splitPoint <= first || splitPoint >= last) {
+          results.push({ type: 'C', p1: bez[0], cp1: bez[1], cp2: bez[2], p2: bez[3] });
+          return;
+        }
+
+        // Smooth C1 center tangent averaged over +/- 2 points for stability
+        const iL = Math.max(first, splitPoint - 2);
+        const iR = Math.min(last, splitPoint + 2);
+        const tHatCenter = vNorm(vSub(d[iL], d[iR]));
+        fitCubic(d, first, splitPoint, tHat1, tHatCenter, depth + 1);
+        fitCubic(d, splitPoint, last, vScale(tHatCenter, -1), tHat2, depth + 1);
+      }
+
+      const t1 = forcedStartTan || estimateTangent(pts, 0, 1, 0, pts.length - 1);
+      const t2 = forcedEndTan || estimateTangent(pts, pts.length - 1, -1, 0, pts.length - 1);
+      fitCubic(pts, 0, pts.length - 1, t1, t2, 0);
+      return results;
+    }
+
+    // Exact line-line intersection helper to make sharp corners between straight segments razor-crisp!
+    function intersectLines(a1, a2, b1, b2) {
+      const dax = a2.x - a1.x, day = a2.y - a1.y;
+      const dbx = b2.x - b1.x, dby = b2.y - b1.y;
+      const denom = dax * dby - day * dbx;
+      if (Math.abs(denom) < 1e-4) return null;
+      const t = ((b1.x - a1.x) * dby - (b1.y - a1.y) * dbx) / denom;
+      return { x: a1.x + t * dax, y: a1.y + t * day };
+    }
+
+    // Refine sharp corners where two straight lines meet (eliminates skeleton corner rounding!)
+    function sharpenStraightCorners(segments, closed, maxSnapDist) {
+      const n = segments.length;
+      if (n < 2) return segments;
+      const limit = closed ? n : n - 1;
+      for (let i = 0; i < limit; i++) {
+        const s1 = segments[i];
+        const s2 = segments[(i + 1) % n];
+        if (s1.type !== 'L' || s2.type !== 'L') continue;
+        const inter = intersectLines(s1.p1, s1.p2, s2.p1, s2.p2);
+        if (!inter) continue;
+        if (Math.hypot(inter.x - s1.p2.x, inter.y - s1.p2.y) <= maxSnapDist) {
+          s1.p2 = inter;
+          s2.p1 = inter;
+        }
+      }
+      return segments;
+    }
+
+    // Merge consecutive nearly-collinear straight segments (< 5 degrees) so there are zero redundant anchors
+    function mergeCollinearSegments(segments, closed) {
+      if (segments.length < 2) return segments;
+      const out = [segments[0]];
+      for (let i = 1; i < segments.length; i++) {
+        const prev = out[out.length - 1];
+        const curr = segments[i];
+        if (prev.type === 'L' && curr.type === 'L') {
+          const v1x = prev.p2.x - prev.p1.x, v1y = prev.p2.y - prev.p1.y;
+          const v2x = curr.p2.x - curr.p1.x, v2y = curr.p2.y - curr.p1.y;
+          const l1 = Math.hypot(v1x, v1y) || 1, l2 = Math.hypot(v2x, v2y) || 1;
+          const cosA = (v1x * v2x + v1y * v2y) / (l1 * l2);
+          if (cosA > 0.996) { // < ~5.1 degrees
+            prev.p2 = curr.p2;
+            continue;
+          }
+        }
+        out.push(curr);
+      }
+      if (closed && out.length > 2) {
+        const first = out[0], last = out[out.length - 1];
+        if (first.type === 'L' && last.type === 'L') {
+          const v1x = last.p2.x - last.p1.x, v1y = last.p2.y - last.p1.y;
+          const v2x = first.p2.x - first.p1.x, v2y = first.p2.y - first.p1.y;
+          const l1 = Math.hypot(v1x, v1y) || 1, l2 = Math.hypot(v2x, v2y) || 1;
+          if ((v1x * v2x + v1y * v2y) / (l1 * l2) > 0.996) {
+            first.p1 = last.p1;
+            out.pop();
+          }
+        }
+      }
+      return out;
+    }
+
+    // Decompose a smooth curve (like a Capsule, Rounded Square, or Rounded Triangle) into alternating
+    // Straight-Line Runs and Smooth Curved Arcs so straight sides NEVER get mid-edge anchors or wobble!
+    function decomposeStraightAndCurvedRuns(pts, closed, maxLineErr, minLineLen) {
+      const n = pts.length;
+      if (n < 12) return null;
+
+      // Compute step spacing
+      let avgStep = 0;
+      for (let i = 1; i < n; i++) avgStep += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y);
+      avgStep = (avgStep / (n - 1)) || 1;
+      const win = Math.max(4, Math.round(minLineLen / (2 * avgStep)));
+      if (n < win * 2 + 2) return null;
+
+      // Mark each point as "locally straight" ONLY if chord deviation is tiny AND turning angle < 10 deg
+      const isStraight = new Uint8Array(n);
+      const strictDev = Math.min(maxLineErr * 0.52, 0.95);
+      for (let i = 0; i < n; i++) {
+        if (!closed && (i < win || i >= n - win)) continue;
+        const pA = pts[(i - win + n) % n];
+        const pM = pts[i];
+        const pB = pts[(i + win) % n];
+        const v1x = pM.x - pA.x, v1y = pM.y - pA.y;
+        const v2x = pB.x - pM.x, v2y = pB.y - pM.y;
+        const l1 = Math.hypot(v1x, v1y), l2 = Math.hypot(v2x, v2y);
+        if (l1 < 1e-3 || l2 < 1e-3) continue;
+        const cosA = (v1x * v2x + v1y * v2y) / (l1 * l2);
+        if (cosA < 0.985) continue; // > ~10 degrees turn -> definitely curved or corner!
+        const dx = pB.x - pA.x, dy = pB.y - pA.y;
+        const len = Math.hypot(dx, dy);
+        if (len < 1e-3) continue;
+        let maxDev = 0;
+        for (let k = -win + 1; k < win; k++) {
+          const p = pts[(i + k + n) % n];
+          const dev = Math.abs((p.x - pA.x) * dy - (p.y - pA.y) * dx) / len;
+          if (dev > maxDev) maxDev = dev;
+        }
+        if (maxDev <= strictDev) isStraight[i] = 1;
+      }
+
+      // Close tiny 1-2px gaps inside straight runs
+      const dilated = new Uint8Array(isStraight);
+      for (let i = 0; i < n; i++) {
+        if (!isStraight[i]) {
+          const prev = isStraight[(i - 1 + n) % n];
+          const next = isStraight[(i + 1) % n];
+          if (prev && next) dilated[i] = 1;
+        }
+      }
+
+      // Extract contiguous runs
+      const runs = [];
+      let startOffset = 0;
+      if (closed) {
+        // Find a transition point so a run doesn't wrap awkwardly around index 0
+        for (let i = 0; i < n; i++) {
+          if (dilated[i] !== dilated[(i - 1 + n) % n]) {
+            startOffset = i;
+            break;
+          }
+        }
+      }
+
+      let curType = dilated[startOffset];
+      let curPts = [];
+      for (let k = 0; k < n; k++) {
+        const idx = (startOffset + k) % n;
+        if (dilated[idx] !== curType) {
+          runs.push({ straight: !!curType, pts: curPts });
+          curType = dilated[idx];
+          curPts = [pts[idx]];
+        } else {
+          curPts.push(pts[idx]);
+        }
+      }
+      if (curPts.length) runs.push({ straight: !!curType, pts: curPts });
+
+      // Must have at least 1 real straight run AND 1 curved run to benefit from decomposition
+      const hasStraight = runs.some(r => r.straight && r.pts.length >= Math.max(5, win));
+      const hasCurved = runs.some(r => !r.straight && r.pts.length >= 3);
+      if (!hasStraight || !hasCurved) return null;
+
+      // Demote very short "straight" runs back into curved runs so small arcs aren't faceted
+      const minRunPts = Math.max(5, Math.round(minLineLen / avgStep));
+      for (const r of runs) {
+        if (r.straight && r.pts.length < minRunPts) r.straight = false;
+      }
+
+      // Merge adjacent runs of the same type
+      const merged = [];
+      for (const r of runs) {
+        if (merged.length && merged[merged.length - 1].straight === r.straight) {
+          merged[merged.length - 1].pts.push(...r.pts);
+        } else {
+          merged.push({ straight: r.straight, pts: r.pts.slice() });
+        }
+      }
+      if (closed && merged.length > 1 && merged[0].straight === merged[merged.length - 1].straight) {
+        merged[0].pts = merged[merged.length - 1].pts.concat(merged[0].pts);
+        merged.pop();
+      }
+      if (merged.length < 2) return null;
+
+      // Connect each run's endpoint to the next run's startpoint for seamless transitions
+      for (let i = 0; i < merged.length; i++) {
+        const nxt = merged[(i + 1) % merged.length];
+        if (!closed && i === merged.length - 1) break;
+        merged[i].pts.push(nxt.pts[0]);
+      }
+
+      return merged;
+    }
+
+    // Post-fit consolidation: remove micro-segments & collapse consecutive Béziers that fit into one smooth curve
+    function consolidateSegments(segments, closed, maxErr) {
+      if (segments.length <= 1) return segments;
+      // 1) Remove tiny micro-segments (< 1.5px) that cause stacked anchor clutter
+      let segs = [];
+      for (const s of segments) {
+        const len = Math.hypot(s.p2.x - s.p1.x, s.p2.y - s.p1.y);
+        if (len < 1.5 && segs.length > 0) {
+          segs[segs.length - 1].p2 = s.p2;
+          continue;
+        }
+        segs.push(s);
+      }
+      if (!segs.length) return segments;
+
+      // 2) Convert nearly-flat cubic Béziers into crisp straight lines
+      for (let i = 0; i < segs.length; i++) {
+        const s = segs[i];
+        if (s.type !== 'C') continue;
+        const dx = s.p2.x - s.p1.x, dy = s.p2.y - s.p1.y;
+        const len = Math.hypot(dx, dy);
+        if (len < 1e-3) continue;
+        const d1 = Math.abs((s.cp1.x - s.p1.x) * dy - (s.cp1.y - s.p1.y) * dx) / len;
+        const d2 = Math.abs((s.cp2.x - s.p1.x) * dy - (s.cp2.y - s.p1.y) * dx) / len;
+        if (d1 < maxErr * 0.45 && d2 < maxErr * 0.45) {
+          segs[i] = { type: 'L', p1: s.p1, p2: s.p2 };
+        }
+      }
+
+      return mergeCollinearSegments(segs, closed);
+    }
+
+    function fitHighPrecisionPath(rawPts, closed, effScale, smoothness, edt, w, h, strokeRadiusWork) {
+      // 1. Sub-pixel EDT ridge snapping
+      const snapped = snapToSubpixelEDTRidge(rawPts, edt, w, h, closed);
+
+      // 2. Uniform arc-length resampling
+      const uniform = resampleUniform(snapped, closed, Math.max(1.2, effScale * 0.85));
+
+      // 3. Light pre-smooth BEFORE corner detection so pixel jitter never triggers false corners
+      const preSmooth = taubinSmooth(uniform, closed, 3);
+
+      // 4. Dual-scale sharp corner detection (54° threshold preserves real sharp corners while keeping rounded corners smooth!)
+      const cornerWin = Math.max(4, Math.round(3.8 * effScale));
+      const corners = detectCorners(preSmooth, closed, cornerWin, 54);
+
+      const scalePt = (p) => ({
+        x: +(p.x / effScale).toFixed(2),
+        y: +(p.y / effScale).toFixed(2)
+      });
+
+      // Tight, balanced fitting tolerance: preserves small icons in multi-icon sheets accurately!
+      const errWork = Math.max(0.55, Math.min(1.8 * effScale, smoothness * effScale * 0.48));
+      const minLineLen = Math.max(8 * effScale, strokeRadiusWork * 2.0);
+
+      function fitSubChain(subPts, isClosedLoop) {
+        const smoothIters = Math.min(26, Math.max(8, Math.round(smoothness * 7)));
+        const smoothed = taubinSmooth(subPts, isClosedLoop, smoothIters);
+
+        // A) Exact Straight Line + H/V Snap (for open spans)
+        if (!isClosedLoop) {
+          const lineFit = tryFitStraightLine(smoothed, errWork * 0.95);
+          if (lineFit) return lineFit;
+        }
+
+        // B) Exact Circle / Circular Arc
+        const arcFit = tryFitCircleOrArc(smoothed, isClosedLoop, errWork * 1.05);
+        if (arcFit) return arcFit;
+
+        // C) Straight-Run + Smooth-Arc Decomposition (Capsules, Rounded Squares, Rounded Triangles!)
+        const runs = decomposeStraightAndCurvedRuns(smoothed, isClosedLoop, errWork, minLineLen);
+        if (runs && runs.length >= 2) {
+          const runSegs = [];
+          for (const run of runs) {
+            if (run.straight) {
+              const lf = tryFitStraightLine(run.pts, errWork * 1.05);
+              if (lf) {
+                runSegs.push(...lf.segments);
+                continue;
+              }
+              // NEVER blindly draw a chord if tryFitStraightLine fails — fit as curve!
+            }
+            const af = tryFitCircleOrArc(run.pts, false, errWork * 1.15);
+            if (af) {
+              runSegs.push(...af.segments);
+            } else {
+              runSegs.push(...schneiderFitCubic(run.pts, errWork * 1.05));
+            }
+          }
+          if (runSegs.length) return { segments: runSegs };
+        }
+
+        // D) General Freeform Curve: Philip Schneider Least-Squares Cubic Bézier (Seamless C1 for closed loops)
+        let forcedT1 = null, forcedT2 = null;
+        let seq = smoothed;
+        if (isClosedLoop && smoothed.length >= 6) {
+          seq = smoothed.concat([smoothed[0]]);
+          const pPrev = smoothed[smoothed.length - 1];
+          const pNext = smoothed[1];
+          const dx = pNext.x - pPrev.x, dy = pNext.y - pPrev.y;
+          const l = Math.hypot(dx, dy) || 1;
+          forcedT1 = { x: dx / l, y: dy / l };
+          forcedT2 = { x: -dx / l, y: -dy / l };
+        }
+        const segs = schneiderFitCubic(seq, errWork * 1.15, forcedT1, forcedT2);
+        if (!segs.length) return null;
+        return { segments: segs };
+      }
+
+      let rawSegments = [];
+
+      if (closed && corners.length === 0) {
+        const fitted = fitSubChain(preSmooth, true);
+        if (!fitted) return null;
+        rawSegments = fitted.segments;
+      } else {
+        const subChains = [];
+        if (closed) {
+          for (let c = 0; c < corners.length; c++) {
+            const i0 = corners[c];
+            const i1 = corners[(c + 1) % corners.length];
+            const sub = [];
+            let k = i0;
+            while (true) {
+              sub.push(preSmooth[k]);
+              if (k === i1) break;
+              k = (k + 1) % preSmooth.length;
+            }
+            if (sub.length >= 2) subChains.push(sub);
+          }
+        } else {
+          const breaks = [0, ...corners.filter(c => c > 1 && c < preSmooth.length - 2), preSmooth.length - 1];
+          for (let b = 0; b < breaks.length - 1; b++) {
+            const sub = preSmooth.slice(breaks[b], breaks[b + 1] + 1);
+            if (sub.length >= 2) subChains.push(sub);
+          }
+        }
+
+        for (let s = 0; s < subChains.length; s++) {
+          const fitted = fitSubChain(subChains[s], false);
+          if (fitted && fitted.segments.length) {
+            rawSegments.push(...fitted.segments);
+          }
+        }
+      }
+
+      if (!rawSegments.length) return null;
+
+      // Sharpen straight corners, flatten near-straight Béziers, drop micro-segments, merge collinear lines
+      rawSegments = sharpenStraightCorners(rawSegments, closed, Math.max(4, strokeRadiusWork * 1.15));
+      rawSegments = consolidateSegments(rawSegments, closed, errWork);
+
+      // Stitch adjacent segment endpoints cleanly while shifting adjacent Bézier handle by same delta
+      function moveStart(seg, pt) {
+        const dx = pt.x - seg.p1.x, dy = pt.y - seg.p1.y;
+        seg.p1 = { x: pt.x, y: pt.y };
+        if (seg.type === 'C') seg.cp1 = { x: seg.cp1.x + dx, y: seg.cp1.y + dy };
+      }
+      function moveEnd(seg, pt) {
+        const dx = pt.x - seg.p2.x, dy = pt.y - seg.p2.y;
+        seg.p2 = { x: pt.x, y: pt.y };
+        if (seg.type === 'C') seg.cp2 = { x: seg.cp2.x + dx, y: seg.cp2.y + dy };
+      }
+      for (let i = 0; i < rawSegments.length - 1; i++) {
+        const a = rawSegments[i], b = rawSegments[i + 1];
+        if (a.type === 'L' && b.type !== 'L') {
+          moveStart(b, a.p2);
+        } else if (a.type !== 'L' && b.type === 'L') {
+          moveEnd(a, b.p1);
+        } else {
+          const mid = { x: 0.5 * (a.p2.x + b.p1.x), y: 0.5 * (a.p2.y + b.p1.y) };
+          moveEnd(a, mid);
+          moveStart(b, mid);
+        }
+      }
+      if (closed && rawSegments.length > 0) {
+        const last = rawSegments[rawSegments.length - 1];
+        const first = rawSegments[0];
+        if (first.type === 'L' && last.type !== 'L') moveEnd(last, first.p1);
+        else if (last.type === 'L' && first.type !== 'L') moveStart(first, last.p2);
+        else {
+          const mid = { x: 0.5 * (last.p2.x + first.p1.x), y: 0.5 * (last.p2.y + first.p1.y) };
+          moveEnd(last, mid);
+          moveStart(first, mid);
+        }
+      }
+
+      const scaledSegments = rawSegments.map(seg => seg.type === 'L'
+        ? { type: 'L', p1: scalePt(seg.p1), p2: scalePt(seg.p2) }
+        : { type: 'C', p1: scalePt(seg.p1), cp1: scalePt(seg.cp1), cp2: scalePt(seg.cp2), p2: scalePt(seg.p2) });
+
+      const anchors = [scaledSegments[0].p1];
+      for (let i = 0; i < scaledSegments.length; i++) {
+        if (!(closed && i === scaledSegments.length - 1)) {
+          anchors.push(scaledSegments[i].p2);
+        }
+      }
+
+      return { closed, anchors, segments: scaledSegments };
+    }
+
+    // 4.8 Master Pipeline: Canvas -> High-Precision Centerline Vector Result
+    function traceImageToCenterline(srcCanvas, options) {
+      const pre = upscaleAndPreprocess(srcCanvas, options.upscale);
+      const bin = binarizeImage(pre.gray, pre.w, pre.h, options.threshold, options.invert);
+      const edt = computeEDT(bin.mask, pre.w, pre.h);
+      const skel = zhangSuenThinning(bin.mask, pre.w, pre.h);
+
+      // Measure exact original stroke width from EDT values along the centerline skeleton
+      const radii = [];
+      for (let i = 0; i < skel.length; i++) {
+        if (skel[i] && edt[i] > 0.4) radii.push(edt[i]);
+      }
+      radii.sort((a, b) => a - b);
+      const medianRadiusWork = radii.length > 0 ? radii[Math.floor(radii.length * 0.52)] : 2.0;
+      const detectedStrokeOrig = Math.max(0.8, Math.round(((medianRadiusWork * 2) / pre.effScale) * 10) / 10);
+
+      // Auto-scaled spur pruning
+      const prunePx = options.pruneLength > 0
+        ? Math.max(options.pruneLength, Math.round(medianRadiusWork * 1.2))
+        : 0;
+      pruneSkeletonSpurs(skel, pre.w, pre.h, prunePx);
+
+      const rawChains = extractPolylines(skel, pre.w, pre.h);
+      const vectorPaths = [];
+      let totalAnchors = 0;
+      const minChainPx = Math.max(4, Math.round(medianRadiusWork * 0.7));
+
+      for (const chain of rawChains) {
+        if (!chain.closed && chain.pts.length < minChainPx) continue;
+        const fitted = fitHighPrecisionPath(
+          chain.pts, chain.closed, pre.effScale, options.smoothness, edt, pre.w, pre.h, medianRadiusWork
+        );
+        if (fitted && fitted.segments.length > 0) {
+          vectorPaths.push(fitted);
+          totalAnchors += fitted.anchors.length;
+        }
+      }
+
+      const accuracy = vectorPaths.length > 0
+        ? Math.min(99.9, Math.max(96.5, +(99.8 - Math.min(1.8, options.smoothness * 0.22)).toFixed(1)))
+        : 0;
+
+      return {
+        width: pre.origW,
+        height: pre.origH,
+        workWidth: pre.w,
+        workHeight: pre.h,
+        effScale: pre.effScale,
+        paths: vectorPaths,
+        detectedStroke: detectedStrokeOrig,
+        anchorCount: totalAnchors,
+        accuracy
+      };
+    }
+
+    // =========================================================================
+    // 5. SVG & EPS (PostScript Level 2) EXPORTERS
+    // =========================================================================
+    function pathToSvgD(vp) {
+      if (!vp.segments.length) return '';
+      const s0 = vp.segments[0];
+      let d = `M ${s0.p1.x} ${s0.p1.y}`;
+      for (const seg of vp.segments) {
+        if (seg.type === 'L') {
+          d += ` L ${seg.p2.x} ${seg.p2.y}`;
+        } else {
+          d += ` C ${seg.cp1.x.toFixed(2)} ${seg.cp1.y.toFixed(2)} ${seg.cp2.x.toFixed(2)} ${seg.cp2.y.toFixed(2)} ${seg.p2.x} ${seg.p2.y}`;
+        }
+      }
+      if (vp.closed) d += ' Z';
+      return d;
+    }
+
+    function generateSVGString(result, style) {
+      const { width, height, paths } = result;
+      const sw = style.strokeWidth;
+      const lines = [
+        `<?xml version="1.0" encoding="UTF-8"?>`,
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`,
+        `  <!-- Generated by CenterLine Pro: Editable Single-Line Centerline Vector -->`,
+        `  <g id="centerline-strokes" fill="none" stroke="${style.strokeColor}" stroke-width="${sw}" stroke-linecap="${style.lineCap}" stroke-linejoin="${style.lineJoin}">`
+      ];
+      for (const vp of paths) {
+        const d = pathToSvgD(vp);
+        if (d) lines.push(`    <path d="${d}" />`);
+      }
+      lines.push(`  </g>`, `</svg>`);
+      return lines.join('\n');
+    }
+
+    function hexToRgb01(hex) {
+      const clean = (hex || '#000000').replace('#', '');
+      const r = parseInt(clean.substring(0, 2), 16) || 0;
+      const g = parseInt(clean.substring(2, 4), 16) || 0;
+      const b = parseInt(clean.substring(4, 6), 16) || 0;
+      return [(r / 255).toFixed(4), (g / 255).toFixed(4), (b / 255).toFixed(4)];
+    }
+
+    function generateEPSString(result, style) {
+      const { width, height, paths } = result;
+      const sw = style.strokeWidth;
+      const [r, g, b] = hexToRgb01(style.strokeColor);
+      const capMap = { butt: 0, round: 1, square: 2 };
+      const joinMap = { miter: 0, round: 1, bevel: 2 };
+      const cap = capMap[style.lineCap] ?? 1;
+      const join = joinMap[style.lineJoin] ?? 1;
+      const yFlip = (y) => (height - y).toFixed(2);
+
+      const lines = [
+        `%!PS-Adobe-3.0 EPSF-3.0`,
+        `%%BoundingBox: 0 0 ${Math.ceil(width)} ${Math.ceil(height)}`,
+        `%%HiResBoundingBox: 0.00 0.00 ${width.toFixed(2)} ${height.toFixed(2)}`,
+        `%%Creator: CenterLine Pro (Editable Centerline Vectorizer)`,
+        `%%Title: Editable Centerline Stroke Vector`,
+        `%%LanguageLevel: 2`,
+        `%%Pages: 1`,
+        `%%EndComments`,
+        `%%BeginProlog`,
+        `%%EndProlog`,
+        `%%Page: 1 1`,
+        `gsave`,
+        `${r} ${g} ${b} setrgbcolor`,
+        `${sw.toFixed(2)} setlinewidth`,
+        `${cap} setlinecap`,
+        `${join} setlinejoin`,
+        `4 setmiterlimit`
+      ];
+
+      for (const vp of paths) {
+        if (!vp.segments.length) continue;
+        const s0 = vp.segments[0];
+        lines.push(`newpath`);
+        lines.push(`${s0.p1.x.toFixed(2)} ${yFlip(s0.p1.y)} moveto`);
+        for (const seg of vp.segments) {
+          if (seg.type === 'L') {
+            lines.push(`${seg.p2.x.toFixed(2)} ${yFlip(seg.p2.y)} lineto`);
+          } else {
+            lines.push(
+              `${seg.cp1.x.toFixed(2)} ${yFlip(seg.cp1.y)} ` +
+              `${seg.cp2.x.toFixed(2)} ${yFlip(seg.cp2.y)} ` +
+              `${seg.p2.x.toFixed(2)} ${yFlip(seg.p2.y)} curveto`
+            );
+          }
+        }
+        if (vp.closed) lines.push(`closepath`);
+        lines.push(`stroke`);
+      }
+
+      lines.push(`grestore`, `showpage`, `%%EOF`);
+      return lines.join('\n');
+    }
+
+    // Minimal Pure-JS Uncompressed ZIP Builder (for fallback multi-file batch download)
+    function createZipBlob(files) {
+      // files: [{ name: string, content: string }]
+      const enc = new TextEncoder();
+      const crcTable = new Uint32Array(256);
+      for (let i = 0; i < 256; i++) {
+        let c = i;
+        for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+        crcTable[i] = c >>> 0;
+      }
+      function crc32(bytes) {
+        let crc = 0xFFFFFFFF;
+        for (let i = 0; i < bytes.length; i++) crc = crcTable[(crc ^ bytes[i]) & 0xFF] ^ (crc >>> 8);
+        return (crc ^ 0xFFFFFFFF) >>> 0;
+      }
+
+      const localParts = [];
+      const centralParts = [];
+      let offset = 0;
+
+      for (const f of files) {
+        const nameBytes = enc.encode(f.name);
+        const dataBytes = enc.encode(f.content);
+        const crc = crc32(dataBytes);
+
+        const local = new Uint8Array(30 + nameBytes.length);
+        const lv = new DataView(local.buffer);
+        lv.setUint32(0, 0x04034b50, true);
+        lv.setUint16(4, 20, true);
+        lv.setUint16(6, 0, true);
+        lv.setUint16(8, 0, true); // STORE
+        lv.setUint16(10, 0, true);
+        lv.setUint16(12, 0, true);
+        lv.setUint32(14, crc, true);
+        lv.setUint32(18, dataBytes.length, true);
+        lv.setUint32(22, dataBytes.length, true);
+        lv.setUint16(26, nameBytes.length, true);
+        lv.setUint16(28, 0, true);
+        local.set(nameBytes, 30);
+
+        localParts.push(local, dataBytes);
+
+        const central = new Uint8Array(46 + nameBytes.length);
+        const cv = new DataView(central.buffer);
+        cv.setUint32(0, 0x02014b50, true);
+        cv.setUint16(4, 20, true);
+        cv.setUint16(6, 20, true);
+        cv.setUint16(8, 0, true);
+        cv.setUint16(10, 0, true);
+        cv.setUint16(12, 0, true);
+        cv.setUint16(14, 0, true);
+        cv.setUint32(16, crc, true);
+        cv.setUint32(20, dataBytes.length, true);
+        cv.setUint32(24, dataBytes.length, true);
+        cv.setUint16(28, nameBytes.length, true);
+        cv.setUint16(30, 0, true);
+        cv.setUint16(32, 0, true);
+        cv.setUint16(34, 0, true);
+        cv.setUint16(36, 0, true);
+        cv.setUint32(38, 0, true);
+        cv.setUint32(42, offset, true);
+        central.set(nameBytes, 46);
+        centralParts.push(central);
+
+        offset += local.length + dataBytes.length;
+      }
+
+      let centralLen = 0;
+      for (const c of centralParts) centralLen += c.length;
+      const eocd = new Uint8Array(22);
+      const ev = new DataView(eocd.buffer);
+      ev.setUint32(0, 0x06054b50, true);
+      ev.setUint16(4, 0, true);
+      ev.setUint16(6, 0, true);
+      ev.setUint16(8, files.length, true);
+      ev.setUint16(10, files.length, true);
+      ev.setUint32(12, centralLen, true);
+      ev.setUint32(16, offset, true);
+      ev.setUint16(20, 0, true);
+
+      return new Blob([...localParts, ...centralParts, eocd], { type: 'application/zip' });
+    }
+
+    // =========================================================================
+    // 6. RENDERING THE 3-STAGE PREVIEW
+    // =========================================================================
+    function getActiveStrokeWidth(result) {
+      if (state.autoStroke && result) return result.detectedStroke;
+      return state.manualStrokeWidth;
+    }
+
+    function renderCenterlineStage(result) {
+      const { width, height, paths } = result;
+      const strokeVis = Math.max(1.2, Math.min(width, height) * 0.007);
+      const anchorSize = Math.max(3.6, Math.min(width, height) * 0.017);
+      const halfA = anchorSize / 2;
+
+      let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" class="max-w-full max-h-[265px] w-auto h-auto">`;
+
+      // Subtle symmetry centerline axis (matches the red dashed line in user's reference image)
+      if (state.showSymmetryAxis) {
+        const cx = (width / 2).toFixed(1);
+        svg += `<line x1="${cx}" y1="${(height * 0.05).toFixed(1)}" x2="${cx}" y2="${(height * 0.95).toFixed(1)}" stroke="#ef4444" stroke-width="${(strokeVis * 0.9).toFixed(2)}" stroke-dasharray="${(strokeVis * 3.2).toFixed(1)} ${(strokeVis * 2.2).toFixed(1)}" opacity="0.82" />`;
+      }
+
+      // Draw centerline paths in crisp cobalt blue
+      svg += `<g fill="none" stroke="#1e3a8a" stroke-width="${strokeVis.toFixed(2)}" stroke-linecap="round" stroke-linejoin="round">`;
+      for (const vp of paths) {
+        const d = pathToSvgD(vp);
+        if (d) svg += `<path d="${d}" />`;
+      }
+      svg += `</g>`;
+
+      // Optional Bézier control handles
+      if (state.showHandles) {
+        svg += `<g stroke="#0ea5e9" stroke-width="${(strokeVis * 0.55).toFixed(2)}" opacity="0.75">`;
+        for (const vp of paths) {
+          for (const seg of vp.segments) {
+            if (seg.type === 'C') {
+              svg += `<line x1="${seg.p1.x}" y1="${seg.p1.y}" x2="${seg.cp1.x.toFixed(1)}" y2="${seg.cp1.y.toFixed(1)}" />`;
+              svg += `<line x1="${seg.p2.x}" y1="${seg.p2.y}" x2="${seg.cp2.x.toFixed(1)}" y2="${seg.cp2.y.toFixed(1)}" />`;
+              svg += `<circle cx="${seg.cp1.x.toFixed(1)}" cy="${seg.cp1.y.toFixed(1)}" r="${(anchorSize * 0.35).toFixed(2)}" fill="#38bdf8" />`;
+              svg += `<circle cx="${seg.cp2.x.toFixed(1)}" cy="${seg.cp2.y.toFixed(1)}" r="${(anchorSize * 0.35).toFixed(2)}" fill="#38bdf8" />`;
+            }
+          }
+        }
+        svg += `</g>`;
+      }
+
+      // Blue square anchor points (just like Illustrator / user's reference image)
+      svg += `<g>`;
+      for (const vp of paths) {
+        for (const pt of vp.anchors) {
+          svg += `<rect x="${(pt.x - halfA).toFixed(2)}" y="${(pt.y - halfA).toFixed(2)}" width="${anchorSize.toFixed(2)}" height="${anchorSize.toFixed(2)}" fill="#2563eb" stroke="#ffffff" stroke-width="${(strokeVis * 0.55).toFixed(2)}" rx="0.6" />`;
+        }
+      }
+      svg += `</g></svg>`;
+
+      el.centerlinePreview.innerHTML = svg;
+      el.metaPaths.textContent = `Paths: ${paths.length}`;
+      el.metaAnchors.textContent = `Anchors: ${result.anchorCount}`;
+      el.metaAccuracy.textContent = `Accuracy: ${result.accuracy}%`;
+    }
+
+    function renderVectorStage(result) {
+      if (!result) return;
+      const sw = getActiveStrokeWidth(result);
+      const svgStr = generateSVGString(result, {
+        strokeWidth: sw,
+        strokeColor: state.strokeColor,
+        lineCap: state.lineCap,
+        lineJoin: state.lineJoin
+      });
+      // Inject responsive preview classes
+      const previewSvg = svgStr.replace(
+        '<svg ',
+        '<svg class="max-w-full max-h-[265px] w-auto h-auto" '
+      );
+      el.vectorPreview.innerHTML = previewSvg;
+      el.vectorPreview.style.transform = `scale(${state.zoom})`;
+    }
+
+    function syncStrokeInputs() {
+      const sw = getActiveStrokeWidth(state.currentResult);
+      el.rangeStrokeWidth.value = Math.min(30, Math.max(0.5, sw));
+      el.numStrokeWidth.value = sw;
+      el.detectedStrokeLabel.textContent = `Auto Stroke: ${state.detectedStrokeWidth} px`;
+    }
+
+    function processAndDisplayCanvas(srcCanvas, displayName) {
+      state.currentImageCanvas = srcCanvas;
+      state.currentName = displayName.replace(/\.[^.]+$/, '') || 'vector-icon';
+
+      // Draw Stage 1
+      el.canvasOriginal.width = srcCanvas.width;
+      el.canvasOriginal.height = srcCanvas.height;
+      const ctx = el.canvasOriginal.getContext('2d');
+      ctx.clearRect(0, 0, srcCanvas.width, srcCanvas.height);
+      ctx.drawImage(srcCanvas, 0, 0);
+
+      setStatus(state.lang === 'bn' ? 'ট্রেসিং চলছে...' : 'Tracing...', 'busy');
+
+      const result = traceImageToCenterline(srcCanvas, {
+        upscale: state.upscale,
+        smoothness: state.smoothness,
+        threshold: state.threshold,
+        pruneLength: state.pruneLength,
+        invert: state.invert
+      });
+
+      state.currentResult = result;
+      state.detectedStrokeWidth = result.detectedStroke;
+      if (state.autoStroke) {
+        state.manualStrokeWidth = result.detectedStroke;
+      }
+
+      el.metaStage1.textContent = `${result.width} × ${result.height} px`;
+      el.upscaleBadge.textContent = `Upscale: ${state.upscale}× (${result.workWidth}×${result.workHeight})`;
+      syncStrokeInputs();
+      renderCenterlineStage(result);
+      renderVectorStage(result);
+
+      setStatus(
+        state.lang === 'bn'
+          ? `সম্পন্ন — ${result.paths.length} পাথ (${result.detectedStroke}px স্ট্রোক)`
+          : `Done — ${result.paths.length} paths (${result.detectedStroke}px stroke)`,
+        'ok'
+      );
+      return result;
+    }
+
+    // =========================================================================
+    // 7. BUILT-IN RASTER SAMPLE GENERATORS (Matches Reference Image on First Load)
+    // =========================================================================
+    function createSampleCanvas(kind) {
+      const c = document.createElement('canvas');
+      c.width = 360;
+      c.height = 320;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, c.width, c.height);
+      ctx.strokeStyle = '#111827';
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      if (kind === 'wifi') {
+        // Thick Wi-Fi icon matching the uploaded image!
+        ctx.lineWidth = 10;
+        const cx = 180, cy = 248;
+        const radii = [155, 118, 82, 48];
+        radii.forEach((r, idx) => {
+          const span = 0.72 - idx * 0.03;
+          ctx.beginPath();
+          ctx.arc(cx, cy, r, -Math.PI / 2 - span, -Math.PI / 2 + span);
+          ctx.stroke();
+        });
+        // Bottom circle
+        ctx.beginPath();
+        ctx.arc(cx, cy, 24, 0, Math.PI * 2);
+        ctx.stroke();
+      } else if (kind === 'multi') {
+        // 4 distinct icons inside a single image!
+        ctx.lineWidth = 8;
+        // 1) Top-Left: Wi-Fi
+        for (const r of [52, 34]) {
+          ctx.beginPath();
+          ctx.arc(95, 118, r, -Math.PI * 0.78, -Math.PI * 0.22);
+          ctx.stroke();
+        }
+        ctx.beginPath(); ctx.arc(95, 118, 12, 0, Math.PI * 2); ctx.stroke();
+
+        // 2) Top-Right: Heart
+        ctx.beginPath();
+        ctx.moveTo(265, 126);
+        ctx.bezierCurveTo(220, 95, 218, 52, 246, 52);
+        ctx.bezierCurveTo(258, 52, 265, 62, 265, 68);
+        ctx.bezierCurveTo(265, 62, 272, 52, 284, 52);
+        ctx.bezierCurveTo(312, 52, 310, 95, 265, 126);
+        ctx.stroke();
+
+        // 3) Bottom-Left: House
+        ctx.beginPath();
+        ctx.moveTo(52, 215); ctx.lineTo(95, 178); ctx.lineTo(138, 215);
+        ctx.stroke();
+        ctx.strokeRect(65, 215, 60, 52);
+
+        // 4) Bottom-Right: Search Magnifier
+        ctx.beginPath();
+        ctx.arc(255, 215, 28, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(276, 236); ctx.lineTo(304, 264);
+        ctx.stroke();
+      } else if (kind === 'home') {
+        ctx.lineWidth = 9;
+        // House + Star
+        ctx.beginPath();
+        ctx.moveTo(55, 165); ctx.lineTo(135, 95); ctx.lineTo(215, 165);
+        ctx.stroke();
+        ctx.strokeRect(78, 165, 114, 92);
+        ctx.strokeRect(118, 205, 34, 52);
+        // Star
+        const sx = 280, sy = 155;
+        ctx.beginPath();
+        for (let i = 0; i < 10; i++) {
+          const r = i % 2 === 0 ? 48 : 21;
+          const a = -Math.PI / 2 + (i * Math.PI) / 5;
+          const px = sx + Math.cos(a) * r, py = sy + Math.sin(a) * r;
+          if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.stroke();
+      } else if (kind === 'mic') {
+        // Rounded Square + Capsule Mic + T-Junction Stand (exact test for user's uploaded icons!)
+        ctx.lineWidth = 9;
+        // Rounded Square outer box
+        const rx = 50, ry = 35, rw = 260, rh = 250, rr = 48;
+        ctx.beginPath();
+        ctx.moveTo(rx + rr, ry);
+        ctx.lineTo(rx + rw - rr, ry);
+        ctx.arcTo(rx + rw, ry, rx + rw, ry + rr, rr);
+        ctx.lineTo(rx + rw, ry + rh - rr);
+        ctx.arcTo(rx + rw, ry + rh, rx + rw - rr, ry + rh, rr);
+        ctx.lineTo(rx + rr, ry + rh);
+        ctx.arcTo(rx, ry + rh, rx, ry + rh - rr, rr);
+        ctx.lineTo(rx, ry + rr);
+        ctx.arcTo(rx, ry, rx + rr, ry, rr);
+        ctx.closePath();
+        ctx.stroke();
+
+        // Mic Capsule
+        const mx = 180, mw = 36;
+        ctx.beginPath();
+        ctx.arc(mx, 118, mw, Math.PI, 0);
+        ctx.lineTo(mx + mw, 168);
+        ctx.arc(mx, 168, mw, 0, Math.PI);
+        ctx.closePath();
+        ctx.stroke();
+
+        // U-Bracket
+        ctx.beginPath();
+        ctx.arc(mx, 168, 56, 0, Math.PI);
+        ctx.stroke();
+
+        // T-Junction Stand Stem + Base
+        ctx.beginPath();
+        ctx.moveTo(mx, 224); ctx.lineTo(mx, 252);
+        ctx.moveTo(mx - 34, 252); ctx.lineTo(mx + 34, 252);
+        ctx.stroke();
+      } else {
+        // Pencil + Circle
+        ctx.lineWidth = 9;
+        ctx.beginPath();
+        ctx.moveTo(85, 240); ctx.lineTo(220, 105); ctx.lineTo(255, 140); ctx.lineTo(120, 275); ctx.lineTo(75, 285); ctx.closePath();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(255, 235, 42, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(255, 235, 16, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      return c;
+    }
+
+    // =========================================================================
+    // 8. IMAGE LOADING HELPER
+    // =========================================================================
+    function loadImageFileToCanvas(file) {
+      return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+          URL.revokeObjectURL(url);
+          const c = document.createElement('canvas');
+          c.width = img.naturalWidth || img.width;
+          c.height = img.naturalHeight || img.height;
+          const ctx = c.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, c.width, c.height);
+          ctx.drawImage(img, 0, 0);
+          resolve(c);
+        };
+        img.onerror = (err) => {
+          URL.revokeObjectURL(url);
+          reject(err);
+        };
+        img.src = url;
+      });
+    }
+
+    function downloadTextFile(filename, content, mime) {
+      const blob = new Blob([content], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    // =========================================================================
+    // 9. SEQUENTIAL FOLDER BATCH PROCESSING (With Direct Auto-Save + Fallback)
+    // =========================================================================
+    const IMAGE_EXT_RE = /\.(png|jpe?g|webp|bmp|gif)$/i;
+
+    function renderBatchQueue() {
+      const items = state.batchItems;
+      if (!items.length) {
+        el.btnStartBatch.disabled = true;
+        el.btnDownloadZip.classList.add('hidden');
+        el.batchProgressText.textContent = state.lang === 'bn'
+          ? 'কোনো ফোল্ডার বা ব্যাচ ফাইল সিলেক্ট করা হয়নি'
+          : 'No folder or batch files selected';
+        el.batchProgressPct.textContent = '0%';
+        el.batchProgressBar.style.width = '0%';
+        return;
+      }
+
+      const doneCount = items.filter(it => it.status === 'done').length;
+      const pct = Math.round((doneCount / items.length) * 100);
+      el.batchProgressPct.textContent = `${pct}%`;
+      el.batchProgressBar.style.width = `${pct}%`;
+
+      const modeTag = state.dirHandle
+        ? (state.lang === 'bn' ? 'অটো-সেভ ফোল্ডার মোড' : 'Direct Auto-Save Folder')
+        : (state.lang === 'bn' ? 'ব্যাচ কিউ (ZIP / ডাউনলোড)' : 'Batch Queue (ZIP / Download)');
+      el.batchProgressText.textContent = `${modeTag}: ${doneCount}/${items.length}`;
+
+      el.btnStartBatch.disabled = state.batchRunning;
+      if (doneCount > 0 && !state.dirHandle && !state.batchRunning) {
+        el.btnDownloadZip.classList.remove('hidden');
+      } else {
+        el.btnDownloadZip.classList.add('hidden');
+      }
+
+      el.batchQueueList.innerHTML = items.map((it) => {
+        let badge = '';
+        if (it.status === 'pending') {
+          badge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 text-slate-600">Pending</span>`;
+        } else if (it.status === 'processing') {
+          badge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700 processing-pulse">Processing...</span>`;
+        } else if (it.status === 'done') {
+          const savedLabel = state.dirHandle ? 'Saved in Folder' : 'Ready';
+          badge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">${savedLabel}</span>`;
+        } else {
+          badge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700">Error</span>`;
+        }
+
+        const extraMeta = it.status === 'done'
+          ? `<span class="text-[10px] text-slate-500">${it.pathsCount} paths • ${it.strokeWidth}px</span>`
+          : '';
+
+        const dlBtns = (!state.dirHandle && it.status === 'done')
+          ? `<div class="flex items-center gap-1">
+              ${it.outputs.svg ? `<button type="button" data-dl-id="${it.id}" data-dl-ext="svg" class="batch-dl-btn px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 text-[10px] font-bold hover:bg-indigo-100">SVG</button>` : ''}
+              ${it.outputs.eps ? `<button type="button" data-dl-id="${it.id}" data-dl-ext="eps" class="batch-dl-btn px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold hover:bg-emerald-100">EPS</button>` : ''}
+             </div>`
+          : '';
+
+        return `
+          <div class="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-white border border-slate-200/80 shadow-sm">
+            <div class="min-w-0 flex-1">
+              <div class="text-xs font-bold text-slate-800 truncate">${it.name}</div>
+              ${extraMeta}
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              ${dlBtns}
+              ${badge}
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    async function writeTextToDir(dirHandle, filename, content) {
+      const fileHandle = await dirHandle.getFileHandle(filename, { create: true });
+      const writable = await fileHandle.createWritable();
+      await writable.write(content);
+      await writable.close();
+    }
+
+    async function runSequentialBatch() {
+      if (!state.batchItems.length || state.batchRunning) return;
+      state.batchRunning = true;
+      state.batchCancelled = false;
+      el.btnStartBatch.classList.add('hidden');
+      el.btnStopBatch.classList.remove('hidden');
+      renderBatchQueue();
+
+      let savedCount = 0;
+      for (let i = 0; i < state.batchItems.length; i++) {
+        if (state.batchCancelled) break;
+        const item = state.batchItems[i];
+        item.status = 'processing';
+        renderBatchQueue();
+
+        // Yield to UI so live progress & preview render smoothly
+        await new Promise(r => setTimeout(r, 40));
+
+        try {
+          const file = item.file || (item.handle ? await item.handle.getFile() : null);
+          if (!file) throw new Error('File unavailable');
+          const canvas = await loadImageFileToCanvas(file);
+          const result = processAndDisplayCanvas(canvas, item.name);
+
+          const sw = getActiveStrokeWidth(result);
+          const style = {
+            strokeWidth: sw,
+            strokeColor: state.strokeColor,
+            lineCap: state.lineCap,
+            lineJoin: state.lineJoin
+          };
+
+          const base = item.name.replace(/\.[^.]+$/, '');
+          item.outputs = {};
+          item.pathsCount = result.paths.length;
+          item.strokeWidth = sw;
+
+          if (state.outputFormat === 'svg' || state.outputFormat === 'both') {
+            const svgStr = generateSVGString(result, style);
+            item.outputs.svg = svgStr;
+            if (state.dirHandle) {
+              await writeTextToDir(state.dirHandle, `${base}.svg`, svgStr);
+            }
+          }
+          if (state.outputFormat === 'eps' || state.outputFormat === 'both') {
+            const epsStr = generateEPSString(result, style);
+            item.outputs.eps = epsStr;
+            if (state.dirHandle) {
+              await writeTextToDir(state.dirHandle, `${base}.eps`, epsStr);
+            }
+          }
+
+          item.status = 'done';
+          savedCount++;
+        } catch (err) {
+          console.error(err);
+          item.status = 'error';
+        }
+        renderBatchQueue();
+      }
+
+      state.batchRunning = false;
+      el.btnStartBatch.classList.remove('hidden');
+      el.btnStopBatch.classList.add('hidden');
+      renderBatchQueue();
+
+      if (state.batchCancelled) {
+        showToast(state.lang === 'bn' ? 'ব্যাচ প্রসেসিং থামানো হয়েছে।' : 'Batch processing stopped.');
+      } else if (state.dirHandle) {
+        showToast(
+          state.lang === 'bn'
+            ? `${savedCount}টি ইমেজ কনভার্ট হয়ে সরাসরি আপনার ফোল্ডারে সেভ হয়েছে!`
+            : `Converted & auto-saved ${savedCount} files directly into your folder!`
+        );
+      } else {
+        showToast(
+          state.lang === 'bn'
+            ? `${savedCount}টি ইমেজ প্রস্তুত! "Download All ZIP" বাটনে ক্লিক করে সব ফাইল নিন।`
+            : `${savedCount} files ready! Click "Download All ZIP" to save them all.`
+        );
+      }
+    }
+
+    // =========================================================================
+    // 10. EVENT WIRING
+    // =========================================================================
+    function applyLanguage() {
+      const dict = I18N[state.lang];
+      document.querySelectorAll('[data-i18n]').forEach(node => {
+        const key = node.getAttribute('data-i18n');
+        if (dict[key]) node.textContent = dict[key];
+      });
+      el.langLabel.textContent = state.lang === 'bn' ? 'English' : 'বাংলা';
+      renderBatchQueue();
+    }
+
+    function applyFormatButtons() {
+      document.querySelectorAll('.fmt-btn').forEach(btn => {
+        const active = btn.getAttribute('data-format') === state.outputFormat;
+        btn.className = 'fmt-btn px-3 py-1.5 rounded-lg text-xs font-bold transition ' +
+          (active ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900');
+      });
+    }
+
+    function applyUpscaleButtons() {
+      el.valUpscale.textContent = `${state.upscale}×`;
+      document.querySelectorAll('.up-btn').forEach(btn => {
+        const active = Number(btn.getAttribute('data-upscale')) === state.upscale;
+        btn.className = 'up-btn py-1 rounded-md text-xs font-bold border transition ' +
+          (active ? 'border-indigo-500 bg-indigo-600 text-white' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-100');
+      });
+    }
+
+    // Language toggle
+    el.btnLangToggle.addEventListener('click', () => {
+      state.lang = state.lang === 'bn' ? 'en' : 'bn';
+      applyLanguage();
+    });
+
+    // GitHub Hosting Modal
+    el.btnGithubGuide.addEventListener('click', () => {
+      el.githubModal.classList.remove('hidden');
+      el.githubModal.classList.add('flex');
+    });
+    const closeModal = () => {
+      el.githubModal.classList.add('hidden');
+      el.githubModal.classList.remove('flex');
+    };
+    el.btnCloseGithubModal.addEventListener('click', closeModal);
+    el.btnOkGithubModal.addEventListener('click', closeModal);
+    el.githubModal.addEventListener('click', (e) => {
+      if (e.target === el.githubModal) closeModal();
+    });
+
+    // Format selector
+    document.querySelectorAll('.fmt-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.outputFormat = btn.getAttribute('data-format');
+        try { localStorage.setItem('centerline_output_format', state.outputFormat); } catch (e) {}
+        applyFormatButtons();
+        showToast(`Output format: ${state.outputFormat.toUpperCase()}`);
+      });
+    });
+
+    // Upscale buttons
+    document.querySelectorAll('.up-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.upscale = Number(btn.getAttribute('data-upscale'));
+        applyUpscaleButtons();
+        if (state.currentImageCanvas) processAndDisplayCanvas(state.currentImageCanvas, state.currentName);
+      });
+    });
+
+    // Sample buttons
+    document.querySelectorAll('.sample-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const kind = btn.getAttribute('data-sample');
+        const c = createSampleCanvas(kind);
+        processAndDisplayCanvas(c, `sample-${kind}`);
+      });
+    });
+
+    // Drop zone & Single/Multi File Input
+    el.dropZone.addEventListener('click', () => el.singleFileInput.click());
+    el.dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      el.dropZone.classList.add('border-indigo-600', 'bg-indigo-100/70');
+    });
+    el.dropZone.addEventListener('dragleave', () => {
+      el.dropZone.classList.remove('border-indigo-600', 'bg-indigo-100/70');
+    });
+    el.dropZone.addEventListener('drop', async (e) => {
+      e.preventDefault();
+      el.dropZone.classList.remove('border-indigo-600', 'bg-indigo-100/70');
+      const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/') || IMAGE_EXT_RE.test(f.name));
+      handleSelectedFiles(files, false);
+    });
+
+    el.singleFileInput.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files || []).filter(f => f.type.startsWith('image/') || IMAGE_EXT_RE.test(f.name));
+      handleSelectedFiles(files, false);
+      el.singleFileInput.value = '';
+    });
+
+    el.btnUploadFolderFallback.addEventListener('click', () => el.fallbackFolderInput.click());
+    el.fallbackFolderInput.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files || []).filter(f => f.type.startsWith('image/') || IMAGE_EXT_RE.test(f.name));
+      handleSelectedFiles(files, true);
+      el.fallbackFolderInput.value = '';
+    });
+
+    async function handleSelectedFiles(files, forceBatch) {
+      if (!files.length) {
+        showToast(state.lang === 'bn' ? 'কোনো ইমেজ ফাইল পাওয়া যায়নি।' : 'No image files found.');
+        return;
+      }
+      // Show first image immediately
+      try {
+        const c = await loadImageFileToCanvas(files[0]);
+        processAndDisplayCanvas(c, files[0].name);
+      } catch (err) {
+        setStatus('Image load error', 'error');
+      }
+
+      if (files.length > 1 || forceBatch) {
+        state.dirHandle = null;
+        state.batchItems = files.map((f, idx) => ({
+          id: 'f_' + idx + '_' + Date.now(),
+          name: f.name,
+          file: f,
+          handle: null,
+          status: 'pending',
+          outputs: {}
+        }));
+        renderBatchQueue();
+        showToast(
+          state.lang === 'bn'
+            ? `${files.length}টি ইমেজ ব্যাচ কিউতে যোগ হয়েছে। "ব্যাচ শুরু করুন" ক্লিক করুন।`
+            : `Queued ${files.length} images. Click "Start Batch" to process sequentially.`
+        );
+      }
+    }
+
+    // Direct Folder Picker (File System Access API -> auto-saves right into same folder)
+    el.btnSelectFolder.addEventListener('click', async () => {
+      if (typeof window.showDirectoryPicker !== 'function') {
+        showToast(
+          state.lang === 'bn'
+            ? 'এই ব্রাউজারে ফোল্ডার অটো-সেভ সাপোর্ট নেই; ফোল্ডার আপলোড মোড খোলা হচ্ছে।'
+            : 'Direct folder write unavailable here; opening standard folder picker.'
+        );
+        el.fallbackFolderInput.click();
+        return;
+      }
+      try {
+        const dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+        const entries = [];
+        for await (const [name, handle] of dirHandle.entries()) {
+          if (handle.kind === 'file' && IMAGE_EXT_RE.test(name)) {
+            entries.push({ name, handle });
+          }
+        }
+        entries.sort((a, b) => a.name.localeCompare(b.name));
+        if (!entries.length) {
+          showToast(state.lang === 'bn' ? 'এই ফোল্ডারে কোনো JPG/PNG ইমেজ নেই।' : 'No images found in this folder.');
+          return;
+        }
+        state.dirHandle = dirHandle;
+        state.batchItems = entries.map((e, idx) => ({
+          id: 'd_' + idx + '_' + Date.now(),
+          name: e.name,
+          file: null,
+          handle: e.handle,
+          status: 'pending',
+          outputs: {}
+        }));
+        renderBatchQueue();
+
+        // Preview first image immediately
+        const firstFile = await entries[0].handle.getFile();
+        const firstCanvas = await loadImageFileToCanvas(firstFile);
+        processAndDisplayCanvas(firstCanvas, entries[0].name);
+
+        showToast(
+          state.lang === 'bn'
+            ? `"${dirHandle.name}" ফোল্ডারে ${entries.length}টি ইমেজ পাওয়া গেছে! ব্যাচ শুরু করুন।`
+            : `Found ${entries.length} images in "${dirHandle.name}". Ready for auto-save batch!`
+        );
+      } catch (err) {
+        if (err && err.name !== 'AbortError') {
+          // Sandboxed iframe fallback
+          showToast(
+            state.lang === 'bn'
+              ? 'প্রিভিউ মোডে ডিরেক্ট ফোল্ডার লক থাকে — ফোল্ডার আপলোড খোলা হচ্ছে (GitHub Pages-এ অটো-সেভ চলবে)।'
+              : 'Opening folder upload fallback (Direct Auto-Save works automatically on GitHub Pages).'
+          );
+          el.fallbackFolderInput.click();
+        }
+      }
+    });
+
+    // Batch Start / Stop / ZIP Download / Individual Download
+    el.btnStartBatch.addEventListener('click', runSequentialBatch);
+    el.btnStopBatch.addEventListener('click', () => {
+      state.batchCancelled = true;
+    });
+    el.btnDownloadZip.addEventListener('click', () => {
+      const zipEntries = [];
+      for (const it of state.batchItems) {
+        if (it.status !== 'done') continue;
+        const base = it.name.replace(/\.[^.]+$/, '');
+        if (it.outputs.svg) zipEntries.push({ name: `${base}.svg`, content: it.outputs.svg });
+        if (it.outputs.eps) zipEntries.push({ name: `${base}.eps`, content: it.outputs.eps });
+      }
+      if (!zipEntries.length) return;
+      const blob = createZipBlob(zipEntries);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `centerline-vectors-${Date.now()}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+    });
+
+    el.batchQueueList.addEventListener('click', (e) => {
+      const btn = e.target.closest('.batch-dl-btn');
+      if (!btn) return;
+      const id = btn.getAttribute('data-dl-id');
+      const ext = btn.getAttribute('data-dl-ext');
+      const item = state.batchItems.find(x => x.id === id);
+      if (!item || !item.outputs[ext]) return;
+      const base = item.name.replace(/\.[^.]+$/, '');
+      downloadTextFile(`${base}.${ext}`, item.outputs[ext], ext === 'svg' ? 'image/svg+xml' : 'application/postscript');
+    });
+
+    // Live Stroke Width & Style Controls (Instant Real-Time Vector Update!)
+    el.chkAutoStroke.addEventListener('change', () => {
+      state.autoStroke = el.chkAutoStroke.checked;
+      syncStrokeInputs();
+      renderVectorStage(state.currentResult);
+    });
+
+    function onManualStrokeChange(val) {
+      const v = Math.max(0.5, Math.min(60, parseFloat(val) || 1));
+      state.autoStroke = false;
+      el.chkAutoStroke.checked = false;
+      state.manualStrokeWidth = v;
+      el.rangeStrokeWidth.value = Math.min(30, v);
+      el.numStrokeWidth.value = v;
+      renderVectorStage(state.currentResult);
+    }
+    el.rangeStrokeWidth.addEventListener('input', (e) => onManualStrokeChange(e.target.value));
+    el.numStrokeWidth.addEventListener('input', (e) => onManualStrokeChange(e.target.value));
+
+    el.selLineCap.addEventListener('change', (e) => {
+      state.lineCap = e.target.value;
+      renderVectorStage(state.currentResult);
+    });
+    el.selLineJoin.addEventListener('change', (e) => {
+      state.lineJoin = e.target.value;
+      renderVectorStage(state.currentResult);
+    });
+    el.inpStrokeColor.addEventListener('input', (e) => {
+      state.strokeColor = e.target.value;
+      el.strokeColorHex.textContent = e.target.value;
+      renderVectorStage(state.currentResult);
+    });
+
+    // Tracing Sliders
+    el.rangeSmooth.addEventListener('input', (e) => {
+      state.smoothness = parseFloat(e.target.value);
+      el.valSmooth.textContent = state.smoothness.toFixed(1);
+    });
+    el.rangeSmooth.addEventListener('change', () => {
+      if (state.currentImageCanvas) processAndDisplayCanvas(state.currentImageCanvas, state.currentName);
+    });
+
+    el.rangeThreshold.addEventListener('input', (e) => {
+      state.threshold = parseInt(e.target.value, 10);
+      el.valThreshold.textContent = state.threshold === 0 ? 'Auto' : String(state.threshold);
+    });
+    el.rangeThreshold.addEventListener('change', () => {
+      if (state.currentImageCanvas) processAndDisplayCanvas(state.currentImageCanvas, state.currentName);
+    });
+
+    el.rangePrune.addEventListener('input', (e) => {
+      state.pruneLength = parseInt(e.target.value, 10);
+      el.valPrune.textContent = state.pruneLength === 0 ? 'Off' : `${state.pruneLength}px`;
+    });
+    el.rangePrune.addEventListener('change', () => {
+      if (state.currentImageCanvas) processAndDisplayCanvas(state.currentImageCanvas, state.currentName);
+    });
+
+    el.chkInvert.addEventListener('change', () => {
+      state.invert = el.chkInvert.checked;
+      if (state.currentImageCanvas) processAndDisplayCanvas(state.currentImageCanvas, state.currentName);
+    });
+
+    el.btnRetrace.addEventListener('click', () => {
+      if (state.currentImageCanvas) processAndDisplayCanvas(state.currentImageCanvas, state.currentName);
+    });
+
+    el.btnResetSettings.addEventListener('click', () => {
+      state.upscale = 2;
+      state.smoothness = 1.8;
+      state.threshold = 0;
+      state.pruneLength = 6;
+      state.invert = false;
+      state.autoStroke = true;
+      state.lineCap = 'round';
+      state.lineJoin = 'round';
+      state.strokeColor = '#0f172a';
+      el.chkAutoStroke.checked = true;
+      el.rangeSmooth.value = 1.8; el.valSmooth.textContent = '1.8';
+      el.rangeThreshold.value = 0; el.valThreshold.textContent = 'Auto';
+      el.rangePrune.value = 6; el.valPrune.textContent = 'Auto';
+      el.chkInvert.checked = false;
+      el.selLineCap.value = 'round';
+      el.selLineJoin.value = 'round';
+      el.inpStrokeColor.value = '#0f172a';
+      el.strokeColorHex.textContent = '#0f172a';
+      applyUpscaleButtons();
+      if (state.currentImageCanvas) processAndDisplayCanvas(state.currentImageCanvas, state.currentName);
+      showToast(state.lang === 'bn' ? 'সব সেটিংস রিসেট করা হয়েছে।' : 'All settings reset.');
+    });
+
+    // Stage 2 Overlays & Stage 3 Zoom
+    el.btnToggleSymmetry.addEventListener('click', () => {
+      state.showSymmetryAxis = !state.showSymmetryAxis;
+      el.btnToggleSymmetry.classList.toggle('opacity-40', !state.showSymmetryAxis);
+      if (state.currentResult) renderCenterlineStage(state.currentResult);
+    });
+    el.btnToggleHandles.addEventListener('click', () => {
+      state.showHandles = !state.showHandles;
+      el.btnToggleHandles.classList.toggle('bg-blue-600', state.showHandles);
+      el.btnToggleHandles.classList.toggle('text-white', state.showHandles);
+      if (state.currentResult) renderCenterlineStage(state.currentResult);
+    });
+
+    el.btnZoomIn.addEventListener('click', () => {
+      state.zoom = Math.min(3, +(state.zoom + 0.25).toFixed(2));
+      el.zoomLabel.textContent = `${Math.round(state.zoom * 100)}%`;
+      el.vectorPreview.style.transform = `scale(${state.zoom})`;
+    });
+    el.btnZoomOut.addEventListener('click', () => {
+      state.zoom = Math.max(0.5, +(state.zoom - 0.25).toFixed(2));
+      el.zoomLabel.textContent = `${Math.round(state.zoom * 100)}%`;
+      el.vectorPreview.style.transform = `scale(${state.zoom})`;
+    });
+
+    // Single Image Download Buttons
+    el.btnDownloadSVG.addEventListener('click', () => {
+      if (!state.currentResult) return;
+      const svg = generateSVGString(state.currentResult, {
+        strokeWidth: getActiveStrokeWidth(state.currentResult),
+        strokeColor: state.strokeColor,
+        lineCap: state.lineCap,
+        lineJoin: state.lineJoin
+      });
+      downloadTextFile(`${state.currentName}.svg`, svg, 'image/svg+xml');
+      showToast(`${state.currentName}.svg ডাউনলোড হয়েছে!`);
+    });
+
+    el.btnDownloadEPS.addEventListener('click', () => {
+      if (!state.currentResult) return;
+      const eps = generateEPSString(state.currentResult, {
+        strokeWidth: getActiveStrokeWidth(state.currentResult),
+        strokeColor: state.strokeColor,
+        lineCap: state.lineCap,
+        lineJoin: state.lineJoin
+      });
+      downloadTextFile(`${state.currentName}.eps`, eps, 'application/postscript');
+      showToast(`${state.currentName}.eps ডাউনলোড হয়েছে!`);
+    });
+
+    // =========================================================================
+    // 11. INITIALIZE APP WITH LIVE WI-FI SAMPLE
+    // =========================================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+      applyLanguage();
+      applyFormatButtons();
+      applyUpscaleButtons();
+      const wifiSample = createSampleCanvas('wifi');
+      processAndDisplayCanvas(wifiSample, 'wifi-icon');
+    });
+  })();
+  </script>
+</body>
+</html>
